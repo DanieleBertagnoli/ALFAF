@@ -7,6 +7,7 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{subfig}
+\usepackage{hyperref}
 
 \begin{document}
 \maketitle
@@ -15,6 +16,8 @@
 \newpage
 
 \section{Interviews}
+
+\subsection{Questions}
 These interviews were conducted to assess the viability of the project idea and serve as the initial stage of the need-finding process. The questions asked to the participants during the interview are:
 \begin{enumerate}
     \item Have you experienced situations in which you or someone you know was in danger? (e.g., my father fell down and was not able to use the phone) If yes, what was the situation? Were you able to contact someone for help? Was it difficult, or were you able to alert someone easily?
@@ -23,7 +26,9 @@ These interviews were conducted to assess the viability of the project idea and 
     \item Would you install such an application to be informed about other contacts' emergencies? Why?
 \end{enumerate}
 
-The following rows contain the main content of each interview, highlighting the most significant contributions given by each participant.
+\subsection{Answers}
+The following rows contain the main content of each interview, 
+highlighting the most significant contributions given by each participant:
 
 \begin{enumerate}
     \item She said that once her grandmother had a medical emergency at 
@@ -143,6 +148,115 @@ The following rows contain the main content of each interview, highlighting the 
     to help each other, whether by providing support or offering a listening 
     ear.
 
+    \item He recalled a time when his neighbor suffered a stroke while 
+    gardening in the backyard. The neighbor's wife was inside the house 
+    and unaware of the situation for several minutes. He believes an app 
+    that could send alerts through loud notifications would be extremely 
+    useful. He prefers SMS and notifications over calls, as they are less 
+    intrusive but still effective. He would install the app to ensure his 
+    family is informed in case of emergencies.
+
+    \item She shared an incident where she was in a car accident and her 
+    phone was damaged, making it impossible to call for help. A passerby 
+    assisted her, but the experience made her realize the importance of 
+    an emergency alert system. She would definitely install the app, 
+    especially for her children who are often away at college. She 
+    prefers notifications and SMS for their reliability and simplicity.
+
+    \item He described a situation where his diabetic friend experienced 
+    a severe hypoglycemic episode and couldn't reach his phone to call 
+    for help. Another friend luckily noticed in time and assisted him. 
+    He thinks the app would be beneficial, particularly for people with 
+    medical conditions. He prefers notifications as the primary method 
+    of alert. He would install the app to monitor his friend's condition 
+    and ensure timely assistance.
+
+    \item She mentioned an instance where her elderly father wandered 
+    off and got lost while she was at work. It took hours to find him, 
+    causing significant distress. She believes an app with GPS tracking 
+    and emergency alerts could prevent such situations. She prefers phone 
+    calls for immediate attention. She would install the app to keep 
+    track of her father's whereabouts and ensure his safety.
+
+    \item He recounted a time when he was hiking alone and twisted
+    his ankle, making it difficult to move. His phone signal was weak, 
+    and it took a long time to contact anyone for help. He believes an 
+    emergency alert app that works in low-signal areas would be 
+    invaluable. He prefers SMS for its reliability in such situations. 
+    He would install the app for personal safety during solo outdoor 
+    activities.
+
 \end{enumerate}
+
+\subsection{Interviews Analysis}
+The interviews conducted provided valuable insights into the potential 
+viability and usefulness of an emergency alert application. Participants 
+shared a diverse range of experiences and opinions, highlighting both the
+demand for such a solution and the considerations necessary for its 
+successful implementation. There was a significant interest in the 
+application among the participants, especially those who had encountered 
+emergencies or had elderly family members living alone.
+
+These intereviews underline a common theme: emergencies can occur 
+unexpectedly, this highlights a clear need for an application 
+that can facilitate quick and easy communication during such critical 
+moments.
+
+Preferences for notification methods varied among participants. 
+Some preferred phone calls for their immediacy and effectiveness in 
+grabbing attention during emergencies. Others favored SMS or app 
+notifications, considering them more reliable and less intrusive. 
+
+\section{Questionnaire}
+For performing a more extended need-finding phase, we create a Google form 
+with some questions to retrieve more information about our idea. The form 
+is available at the following link: \url{https://forms.gle/1AnJ6wdFpiuWXPuFA}.
+
+\subsection{Results}
+We achieved a total of 80 answers and these are the results. As shown in 
+\hyperref[fig:age]{Figure~\ref*{fig:age}}, more than $70\%$ of the partecipants
+were having an age between 18 and 30 years old. 
+ 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{Images/age.png}
+    \caption{Graph showing the partecipants' age.}
+    \label{fig:age}
+\end{figure}
+
+\section{Marvel Prototype}
+As a first prototype, we decided to create a Marvel prototype, which can be tried 
+at the following link: \url{https://marvelapp.com/prototype/fa2f7b8}. 
+We conducted 12 tests with different users, trying to cover the widest 
+age range possible. 
+
+\subsection{Tasks}
+During the tests, we asked each user to perform the following tasks:
+\begin{enumerate}
+    \item Try to activate the emergency mode. 
+    \item Find settings and add a new contact.
+    \item Modify the contact priority.
+    \item Add a new notification method.
+    \item Remove a detection.
+\end{enumerate}
+
+\subsection{Tests}
+The following rows contain the main content of each test:
+\begin{enumerate}
+    \item The first user is a 55-year-old woman. The first task was completed 
+    without hesitation. The second task required more time to be 
+    executed as the user tried to uncheck one of the checked contacts. 
+    However, due to a prototype limitation, this was not possible as we 
+    didn't create enough screens to cover all possible combinations. 
+    All the other tasks were performed easily. 
+
+    \item The user is a 17-year-old boy. All tasks were executed 
+    without problems. 
+
+    \item The user is a 22-year-old woman. We repeated the test two times 
+    due to a bug that caused a wrong screen to appear when tapping on the contacts after a particular sequence of actions. Once fixed, the tasks 
+    were performed correctly. 
+\end{enumerate}
+
 
 \end{document}

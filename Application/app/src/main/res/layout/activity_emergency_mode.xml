@@ -9,7 +9,7 @@
     tools:context=".EmergencyMode">
 
     <RelativeLayout
-        android:id="@id/confirm_btn"
+        android:id="@+id/confirm_btn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="70dp"
@@ -38,7 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:text="AUTOMATIC CONFIRM IN 10s"
+            android:text="AUTOMATIC CONFIRM IN Xs"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="15sp"

@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -13,7 +15,7 @@
         android:theme="@style/Theme.ALFAF"
         tools:targetApi="31">
         <activity
-            android:name=".Emergency_mode"
+            android:name=".EmergencyMode"
             android:exported="false"
             android:theme="@style/Theme.ALFAF" />
         <activity
@@ -26,5 +28,4 @@
             </intent-filter>
         </activity>
     </application>
-
 </manifest>

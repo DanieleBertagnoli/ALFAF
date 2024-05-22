@@ -18,6 +18,8 @@
         android:background="@drawable/rounded_layout"
         android:paddingTop="10dp"
         android:paddingBottom="15dp"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintBottom_toTopOf="@+id/revert_btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -78,7 +80,6 @@
         android:textSize="35sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/alert_img_2"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/alert_img"
         app:layout_constraintTop_toTopOf="parent" />
 

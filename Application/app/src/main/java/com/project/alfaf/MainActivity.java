@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         // Add event listener to settings button
         ImageButton settingsBtn = findViewById(R.id.settings_btn);
         settingsBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, EmergencyMode.class); // Assuming SettingsActivity
+            Intent intent = new Intent(this, Contacts.class); // Assuming SettingsActivity
             startActivity(intent);
         });
     }

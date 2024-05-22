@@ -6,6 +6,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="#2E2E2E"
+    android:paddingVertical="30dp"
     tools:context=".ContactsActivity">
 
     <TextView
@@ -25,7 +26,6 @@
         android:id="@+id/delete_contact"
         android:layout_width="40dp"
         android:layout_height="0dp"
-        android:layout_marginStart="197dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="10dp"
@@ -34,7 +34,6 @@
         android:scaleType="fitXY"
         app:layout_constraintBottom_toTopOf="@+id/divider"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/contact_name"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/trash_icon"
         app:tint="#C51A1D" />
@@ -43,7 +42,6 @@
         android:id="@+id/prioritize_contact"
         android:layout_width="40dp"
         android:layout_height="0dp"
-        android:layout_marginStart="141dp"
         android:layout_marginTop="13dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="13dp"
@@ -52,7 +50,6 @@
         android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/delete_contact"
-        app:layout_constraintStart_toEndOf="@+id/contact_name"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/priority_icon"
         app:tint="#40C057" />

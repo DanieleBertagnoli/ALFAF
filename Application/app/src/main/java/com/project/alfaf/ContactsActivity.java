@@ -28,9 +28,11 @@ public class ContactsActivity extends AppCompatActivity {
     private static final int PICK_CONTACT_REQUEST = 1;
     private static final int REQUEST_READ_CONTACTS = 2;
 
-    private TextView priorityInfo;
+    private LinearLayout priorityInfo;
     private TextView noContacts;
     private LinearLayout contactListContainer;
+    private ArrayList<Long> selectedContactIds = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +46,7 @@ public class ContactsActivity extends AppCompatActivity {
             return insets;
         });
 
-        priorityInfo = findViewById(R.id.priority_info_txt);
+        priorityInfo = findViewById(R.id.priority_info_layout);
         priorityInfo.setVisibility(View.INVISIBLE);
 
         noContacts = findViewById(R.id.no_contacts_txt);
@@ -53,12 +55,7 @@ public class ContactsActivity extends AppCompatActivity {
         contactListContainer = findViewById(R.id.contact_list_container);
 
         ImageButton addContactBtn = findViewById(R.id.add_contact_btn);
-        addContactBtn.setOnClickListener(v -> {
-            priorityInfo.setVisibility(View.VISIBLE); // Turn on the priority info text
-            noContacts.setVisibility(View.INVISIBLE); // Turn off the no contacts text
-
-            checkPermissionsAndPickContacts();
-        });
+        addContactBtn.setOnClickListener(v -> checkPermissionsAndPickContacts());
     }
 
     private void checkPermissionsAndPickContacts() {
@@ -84,6 +81,7 @@ public class ContactsActivity extends AppCompatActivity {
 
     private void pickContacts() {
         Intent pickContactIntent = new Intent(this, ContactPickerActivity.class);
+        pickContactIntent.putExtra("selectedContactIds", selectedContactIds);
         startActivityForResult(pickContactIntent, PICK_CONTACT_REQUEST);
     }
 
@@ -93,16 +91,23 @@ public class ContactsActivity extends AppCompatActivity {
         if (requestCode == PICK_CONTACT_REQUEST && resultCode == RESULT_OK) {
             if (data != null) {
                 ArrayList<String> selectedContacts = data.getStringArrayListExtra("selectedContacts");
-                if (selectedContacts != null) {
-                    for (String contactName : selectedContacts) {
-                        addContact(contactName);
+                @SuppressWarnings("unchecked")
+                ArrayList<Long> contactIds = (ArrayList<Long>) data.getSerializableExtra("selectedContactIds");
+                if (selectedContacts != null && contactIds != null) {
+                    for (int i = 0; i < selectedContacts.size(); i++) {
+                        Long contactId = contactIds.get(i);
+                        if (!selectedContactIds.contains(contactId)) {
+                            addContact(selectedContacts.get(i), contactId);
+                            selectedContactIds.add(contactId);
+                        }
                     }
                 }
             }
         }
     }
 
-    private void addContact(String contactName) {
+
+    private void addContact(String contactName, Long contactId) {
         LayoutInflater inflater = LayoutInflater.from(this);
         ConstraintLayout contactLayout = (ConstraintLayout) inflater.inflate(R.layout.contact_layout, null);
 
@@ -114,6 +119,7 @@ public class ContactsActivity extends AppCompatActivity {
 
         deleteButton.setOnClickListener(v -> {
             contactListContainer.removeView(contactLayout);
+            selectedContactIds.remove(contactId);  // Remove contact ID from the list
             updatePrioritizeButtonsVisibility();
             if (contactListContainer.getChildCount() == 0) {
                 priorityInfo.setVisibility(View.INVISIBLE);
@@ -130,6 +136,7 @@ public class ContactsActivity extends AppCompatActivity {
         contactListContainer.addView(contactLayout);
         updatePrioritizeButtonsVisibility();
     }
+
 
     private void updatePrioritizeButtonsVisibility() {
         int childCount = contactListContainer.getChildCount();

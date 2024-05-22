@@ -2,19 +2,36 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp"
     android:background="#2E2E2E">
 
-    <EditText
-        android:id="@+id/et_search"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Search Contacts"
-        android:inputType="text"
-        android:backgroundTint="@color/white"
-        android:textColorHint="@color/white"
-        android:textColor="@color/white"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="20dp">
+
+        <ImageView
+            android:id="@+id/search_icon"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            app:tint="@color/white"
+            android:src="@drawable/search_icon"/>
+
+        <EditText
+            android:id="@+id/et_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Search Contacts"
+            android:inputType="text"
+            android:backgroundTint="@color/white"
+            android:textColorHint="@color/white"
+            android:textColor="@color/white"/>
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/btn_done"
@@ -22,7 +39,7 @@
         android:layout_height="wrap_content"
         android:text="Done"
         android:backgroundTint="#40C057"
-        android:textColor="#FFFFFF" />
+        android:textColor="#FFFFFF"/>
 
     <ListView
         android:id="@+id/contact_list_view"
@@ -30,6 +47,7 @@
         android:layout_height="wrap_content"
         android:choiceMode="multipleChoice"
         android:background="#2E2E2E"
-        android:foregroundTint="@color/white" />
+        android:foregroundTint="@color/white"
+        android:paddingVertical="40dp"/>
 
 </LinearLayout>

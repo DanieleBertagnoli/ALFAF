@@ -26,7 +26,6 @@ import java.util.Set;
 public class ContactPickerActivity extends AppCompatActivity {
 
     private ListView contactListView;
-    private Button doneButton;
     private Set<Long> selectedContactIds; // Store the IDs of selected contacts
 
     @Override
@@ -35,11 +34,16 @@ public class ContactPickerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_contact_picker);
 
         contactListView = findViewById(R.id.contact_list_view);
-        doneButton = findViewById(R.id.btn_done);
-
+        Button doneButton = findViewById(R.id.btn_done);
         EditText searchEditText = findViewById(R.id.et_search);
 
         selectedContactIds = new HashSet<>();
+        // Retrieve selectedContactIds from the intent
+        @SuppressWarnings("unchecked")
+        ArrayList<Long> passedSelectedContactIds = (ArrayList<Long>) getIntent().getSerializableExtra("selectedContactIds");
+        if (passedSelectedContactIds != null) {
+            selectedContactIds.addAll(passedSelectedContactIds);
+        }
 
         searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -58,15 +62,20 @@ public class ContactPickerActivity extends AppCompatActivity {
 
         doneButton.setOnClickListener(v -> {
             ArrayList<String> selectedContacts = getSelectedContactsNames();
+            ArrayList<Long> contactIds = new ArrayList<>(selectedContactIds);
 
             Intent resultIntent = new Intent();
             resultIntent.putStringArrayListExtra("selectedContacts", selectedContacts);
+            resultIntent.putExtra("selectedContactIds", contactIds);
             setResult(RESULT_OK, resultIntent);
             finish();
         });
     }
 
     private void loadContacts() {
+        @SuppressWarnings("unchecked")
+        ArrayList<Long> selectedContactIds = (ArrayList<Long>) getIntent().getSerializableExtra("selectedContactIds");
+
         ContentResolver contentResolver = getContentResolver();
         Cursor cursor = contentResolver.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
@@ -81,7 +90,7 @@ public class ContactPickerActivity extends AppCompatActivity {
                 ContactsContract.Contacts.DISPLAY_NAME + " ASC"
         );
 
-        Cursor uniqueCursor = removeDuplicates(cursor);
+        Cursor uniqueCursor = removeDuplicates(cursor, selectedContactIds);
 
         String[] from = {ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER};
         int[] to = {R.id.text_contact_name, R.id.text_contact_number, R.id.checkbox_contact};
@@ -93,6 +102,9 @@ public class ContactPickerActivity extends AppCompatActivity {
     }
 
     private void filterContacts(String query) {
+        @SuppressWarnings("unchecked")
+        ArrayList<Long> selectedContactIds = (ArrayList<Long>) getIntent().getSerializableExtra("selectedContactIds");
+
         ContentResolver contentResolver = getContentResolver();
         Cursor filteredCursor = contentResolver.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
@@ -107,12 +119,12 @@ public class ContactPickerActivity extends AppCompatActivity {
                 ContactsContract.Contacts.DISPLAY_NAME + " ASC"
         );
 
-        Cursor uniqueCursor = removeDuplicates(filteredCursor);
+        Cursor uniqueCursor = removeDuplicates(filteredCursor, selectedContactIds);
 
         ((CustomCursorAdapter) contactListView.getAdapter()).updateCursor(uniqueCursor, getSelectedIds());
     }
 
-    private Cursor removeDuplicates(Cursor cursor) {
+    private Cursor removeDuplicates(Cursor cursor, ArrayList<Long> selectedContactIds) {
         MatrixCursor uniqueCursor = new MatrixCursor(new String[]{
                 ContactsContract.CommonDataKinds.Phone._ID,
                 ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
@@ -123,6 +135,11 @@ public class ContactPickerActivity extends AppCompatActivity {
         HashSet<String> phoneNumbersSet = new HashSet<>();
         if (cursor != null && cursor.moveToFirst()) {
             do {
+                long contactId = cursor.getLong(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
+                if (selectedContactIds != null && selectedContactIds.contains(contactId)) {
+                    continue;  // Skip already selected contacts
+                }
+
                 String phoneNumber = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER)).replaceAll("\\s+", "");
                 if (phoneNumbersSet.add(phoneNumber)) {
                     uniqueCursor.addRow(new Object[]{
@@ -188,20 +205,22 @@ public class ContactPickerActivity extends AppCompatActivity {
             nameTextView.setText(contactName);
             numberTextView.setText(contactNumber);
 
+            // Detach the listener
+            checkBox.setOnCheckedChangeListener(null);
+            // Set checkbox state
             checkBox.setChecked(selectedContactIds.contains(contactId));
-
+            // Reattach the listener
             checkBox.setOnCheckedChangeListener((compoundButton, isChecked) -> {
                 if (isChecked) {
                     selectedContactIds.add(contactId);
                 } else {
+                    System.out.println("REMOVING " + contactId);
                     selectedContactIds.remove(contactId);
                 }
             });
         }
 
         void updateCursor(Cursor cursor, Set<Long> selectedIds) {
-            selectedContactIds.clear();
-            selectedContactIds.addAll(selectedIds);
             super.changeCursor(cursor);
         }
     }

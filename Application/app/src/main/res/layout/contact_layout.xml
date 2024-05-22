@@ -6,7 +6,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="#2E2E2E"
-    tools:context=".Contacts">
+    tools:context=".ContactsActivity">
 
     <TextView
         android:id="@+id/contact_name"

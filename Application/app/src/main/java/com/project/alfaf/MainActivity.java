@@ -5,7 +5,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.widget.ImageButton;
-import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,21 +37,21 @@ public class MainActivity extends AppCompatActivity {
         mShakeDetector = new ShakeDetector();
         mShakeDetector.setOnShakeListener(count -> {
             // Handle shake event
-            Intent intent = new Intent(this, EmergencyMode.class);
+            Intent intent = new Intent(this, EmergencyModeActivity.class);
             startActivity(intent);
         });
 
         // Add event listener to emergency button
         MaterialButton emergencyBtn = findViewById(R.id.emergency_btn);
         emergencyBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, EmergencyMode.class);
+            Intent intent = new Intent(this, EmergencyModeActivity.class);
             startActivity(intent);
         });
 
         // Add event listener to settings button
         ImageButton settingsBtn = findViewById(R.id.settings_btn);
         settingsBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, Contacts.class); // Assuming SettingsActivity
+            Intent intent = new Intent(this, ContactsActivity.class); // Assuming SettingsActivity
             startActivity(intent);
         });
     }

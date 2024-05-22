@@ -1,26 +1,32 @@
 package com.project.alfaf;
 
+import android.Manifest;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-public class Contacts extends AppCompatActivity {
+import java.util.ArrayList;
+
+public class ContactsActivity extends AppCompatActivity {
 
     private static final int PICK_CONTACT_REQUEST = 1;
+    private static final int REQUEST_READ_CONTACTS = 2;
 
     private TextView priorityInfo;
     private TextView noContacts;
@@ -46,18 +52,38 @@ public class Contacts extends AppCompatActivity {
 
         contactListContainer = findViewById(R.id.contact_list_container);
 
-        // Add event listener to add contact button
         ImageButton addContactBtn = findViewById(R.id.add_contact_btn);
         addContactBtn.setOnClickListener(v -> {
             priorityInfo.setVisibility(View.VISIBLE); // Turn on the priority info text
             noContacts.setVisibility(View.INVISIBLE); // Turn off the no contacts text
 
-            pickContact();
+            checkPermissionsAndPickContacts();
         });
     }
 
-    private void pickContact() {
-        Intent pickContactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+    private void checkPermissionsAndPickContacts() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, REQUEST_READ_CONTACTS);
+        } else {
+            pickContacts();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_READ_CONTACTS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                pickContacts();
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, REQUEST_READ_CONTACTS);
+            }
+        }
+    }
+
+    private void pickContacts() {
+        Intent pickContactIntent = new Intent(this, ContactPickerActivity.class);
         startActivityForResult(pickContactIntent, PICK_CONTACT_REQUEST);
     }
 
@@ -66,26 +92,14 @@ public class Contacts extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_CONTACT_REQUEST && resultCode == RESULT_OK) {
             if (data != null) {
-                Uri contactUri = data.getData();
-                if (contactUri != null) {
-                    String contactName = getContactName(contactUri);
-                    if (contactName != null) {
+                ArrayList<String> selectedContacts = data.getStringArrayListExtra("selectedContacts");
+                if (selectedContacts != null) {
+                    for (String contactName : selectedContacts) {
                         addContact(contactName);
                     }
                 }
             }
         }
-    }
-
-    private String getContactName(Uri contactUri) {
-        String contactName = null;
-        Cursor cursor = getContentResolver().query(contactUri, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-            contactName = cursor.getString(nameIndex);
-            cursor.close();
-        }
-        return contactName;
     }
 
     private void addContact(String contactName) {
@@ -113,7 +127,6 @@ public class Contacts extends AppCompatActivity {
             updatePrioritizeButtonsVisibility();
         });
 
-        // Add the contact layout to the LinearLayout inside the ScrollView
         contactListContainer.addView(contactLayout);
         updatePrioritizeButtonsVisibility();
     }

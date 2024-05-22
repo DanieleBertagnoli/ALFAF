@@ -14,7 +14,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
 
-public class EmergencyMode extends AppCompatActivity {
+public class EmergencyModeActivity extends AppCompatActivity {
 
     private final int automaticConfirmTimer = 10; // Automatic confirm timer in seconds
     private CountDownTimer countDownTimer;

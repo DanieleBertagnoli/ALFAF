@@ -1,12 +1,14 @@
 package com.project.alfaf;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -21,9 +23,14 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-public class ContactsActivity extends AppCompatActivity {
+public class ContactsSettingsActivity extends AppCompatActivity {
 
     private static final int PICK_CONTACT_REQUEST = 1;
     private static final int REQUEST_READ_CONTACTS = 2;
@@ -33,12 +40,11 @@ public class ContactsActivity extends AppCompatActivity {
     private LinearLayout contactListContainer;
     private ArrayList<Long> selectedContactIds = new ArrayList<>();
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_contacts);
+        setContentView(R.layout.activity_contacts_settings);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -56,6 +62,14 @@ public class ContactsActivity extends AppCompatActivity {
 
         ImageButton addContactBtn = findViewById(R.id.add_contact_btn);
         addContactBtn.setOnClickListener(v -> checkPermissionsAndPickContacts());
+
+        ImageView backBtn = findViewById(R.id.back_btn_contacts);
+        backBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        });
+
+        loadContactsFromFile();
     }
 
     private void checkPermissionsAndPickContacts() {
@@ -101,15 +115,48 @@ public class ContactsActivity extends AppCompatActivity {
                             selectedContactIds.add(contactId);
                         }
                     }
+                    saveContactsToFile(selectedContacts, contactIds);
                 }
             }
         }
     }
 
+    private void saveContactsToFile(ArrayList<String> contacts, ArrayList<Long> contactIds) {
+        try (FileOutputStream fos = openFileOutput("contacts.txt", Context.MODE_PRIVATE)) {
+            for (int i = 0; i < contacts.size(); i++) {
+                String contact = contacts.get(i);
+                Long contactId = contactIds.get(i);
+                String data = contact + "," + contactId + "\n";
+                fos.write(data.getBytes());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadContactsFromFile() {
+        try (FileInputStream fis = openFileInput("contacts.txt");
+             InputStreamReader isr = new InputStreamReader(fis);
+             BufferedReader br = new BufferedReader(isr)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 2) {
+                    String contactName = parts[0];
+                    Long contactId = Long.parseLong(parts[1]);
+                    addContact(contactName, contactId);
+                    selectedContactIds.add(contactId);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void addContact(String contactName, Long contactId) {
         LayoutInflater inflater = LayoutInflater.from(this);
         ConstraintLayout contactLayout = (ConstraintLayout) inflater.inflate(R.layout.contact_layout, null);
+        contactLayout.setTag(contactId);
 
         TextView contactNameTextView = contactLayout.findViewById(R.id.contact_name);
         contactNameTextView.setText(contactName);
@@ -137,17 +184,29 @@ public class ContactsActivity extends AppCompatActivity {
         updatePrioritizeButtonsVisibility();
     }
 
-
     private void updatePrioritizeButtonsVisibility() {
         int childCount = contactListContainer.getChildCount();
+        ArrayList<String> contacts = new ArrayList<>();
+        ArrayList<Long> contactIds = new ArrayList<>();
+
         for (int i = 0; i < childCount; i++) {
             View contactLayout = contactListContainer.getChildAt(i);
+            TextView contactNameTextView = contactLayout.findViewById(R.id.contact_name);
             ImageButton prioritizeButton = contactLayout.findViewById(R.id.prioritize_contact);
+
+            String contactName = contactNameTextView.getText().toString();
+            Long contactId = (Long) contactLayout.getTag();
+
+            contacts.add(contactName);
+            contactIds.add(contactId);
+
             if (i == 0) {
                 prioritizeButton.setVisibility(View.INVISIBLE);
             } else {
                 prioritizeButton.setVisibility(View.VISIBLE);
             }
         }
+
+        saveContactsToFile(contacts, contactIds);
     }
 }

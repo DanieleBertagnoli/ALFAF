@@ -126,7 +126,7 @@ public class ContactsSettingsActivity extends AppCompatActivity {
             for (int i = 0; i < contacts.size(); i++) {
                 String contact = contacts.get(i);
                 Long contactId = contactIds.get(i);
-                String data = contact + "," + contactId + "\n";
+                String data = contact + " " + contactId + "\n";
                 fos.write(data.getBytes());
             }
         } catch (IOException e) {

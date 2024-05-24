@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "456411160367",
+    "project_id": "alfaf-e8023",
+    "storage_bucket": "alfaf-e8023.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:456411160367:android:b3d81cdc12a37cfa72cbda",
+        "android_client_info": {
+          "package_name": "com.project.alfaf"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSIW2wOhY2lSOnqe4OMgNlUtRHWQOpGjo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

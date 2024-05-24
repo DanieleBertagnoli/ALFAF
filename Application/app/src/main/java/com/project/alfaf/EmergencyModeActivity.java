@@ -1,5 +1,6 @@
 package com.project.alfaf;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -22,6 +23,11 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EmergencyModeActivity extends AppCompatActivity {
 
@@ -82,16 +88,14 @@ public class EmergencyModeActivity extends AppCompatActivity {
 
     private void manageEmergency() {
         // Retrieve the first contact from the list
-        String contactName = null;
         Long contactId = null;
         try (FileInputStream fis = openFileInput("contacts.txt");
              InputStreamReader isr = new InputStreamReader(fis);
              BufferedReader br = new BufferedReader(isr)) {
             String line;
             if ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
+                String[] parts = line.split(" ");
                 if (parts.length == 2) {
-                    contactName = parts[0];
                     contactId = Long.parseLong(parts[1]);
                 }
             }
@@ -100,11 +104,12 @@ public class EmergencyModeActivity extends AppCompatActivity {
         }
 
         // Get the contact number using the contact name or ID
-        String contactNumber = getContactNumber(contactId);
+        String contactNumber = getContactNumber(this, contactId);
 
         // Check notification settings
-        boolean callNotificationEnabled = isCallNotificationEnabled();
-        boolean smsNotificationEnabled = isSmsNotificationEnabled();
+        boolean callNotificationEnabled = isNotificationMethodEnabled(NotificationMethod.CALL, this);
+        boolean smsNotificationEnabled = isNotificationMethodEnabled(NotificationMethod.SMS, this);
+        boolean notificationEnabled = isNotificationMethodEnabled(NotificationMethod.NOTIFICATION, this);
 
         // Call the contact if call notification is enabled
         if (callNotificationEnabled) {
@@ -117,16 +122,21 @@ public class EmergencyModeActivity extends AppCompatActivity {
         if (smsNotificationEnabled) {
             sendSms(contactNumber);
         }
+
+        // Send SMS if SMS notification is enabled
+        if (notificationEnabled) {
+            sendEmergencyNotification(this);
+        }
     }
 
-    private boolean isCallNotificationEnabled() {
+    private static boolean isNotificationMethodEnabled(NotificationMethod notificationMethod, Context context) {
         boolean isEnabled = false;
-        try (FileInputStream fis = openFileInput("notification_settings.txt");
+        try (FileInputStream fis = context.openFileInput("notification_settings.txt");
              InputStreamReader isr = new InputStreamReader(fis);
              BufferedReader br = new BufferedReader(isr)) {
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.contains("Call Notification: ")) {
+                if (line.contains(notificationMethod + ": ")) {
                     isEnabled = Boolean.parseBoolean(line.split(": ")[1]);
                     break;
                 }
@@ -137,23 +147,91 @@ public class EmergencyModeActivity extends AppCompatActivity {
         return isEnabled;
     }
 
-    private boolean isSmsNotificationEnabled() {
-        boolean isEnabled = false;
-        try (FileInputStream fis = openFileInput("notification_settings.txt");
+    public static void sendEmergencyNotification(Context context) {
+
+        if(!isNotificationMethodEnabled(NotificationMethod.NOTIFICATION, context)){
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String phoneNumber = getPhoneNumber(context);
+                    List<String> contacts = getContacts(context);
+                    StringBuilder messageBuilder = new StringBuilder("emergency " + phoneNumber);
+                    for (String contact : contacts) {
+                        messageBuilder.append(" ").append(contact);
+                    }
+                    String message = messageBuilder.toString();
+
+                    URL url = new URL("http://100.75.230.21:5000");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setDoOutput(true);
+                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+
+                    OutputStream os = conn.getOutputStream();
+                    os.write(message.getBytes("UTF-8"));
+                    os.close();
+
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        System.out.println("Success");
+                    } else {
+                        System.out.println(responseCode);
+                    }
+                    conn.disconnect();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private static String getPhoneNumber(Context context) {
+        String phoneNumber = "";
+        try {
+            FileInputStream fis = context.openFileInput("user_info.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+            String line;
+            if ((line = reader.readLine()) != null) {
+                String[] parts = line.split(" ");
+                if (parts.length == 2) {
+                    phoneNumber = parts[1];
+                }
+            }
+            reader.close();
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return phoneNumber;
+    }
+
+    private static List<String> getContacts(Context context) {
+        List<String> contacts = new ArrayList<>();
+
+        try (FileInputStream fis = context.openFileInput("contacts.txt");
              InputStreamReader isr = new InputStreamReader(fis);
              BufferedReader br = new BufferedReader(isr)) {
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.contains("SMS Notification: ")) {
-                    isEnabled = Boolean.parseBoolean(line.split(": ")[1]);
-                    break;
+                String[] parts = line.split(" ");
+                if (parts.length == 2) {
+                    long contactId = Long.parseLong(parts[1]);
+                    String contactNumber = getContactNumber(context, contactId);
+                    if (!contactNumber.isEmpty()) {
+                        contacts.add(contactNumber);
+                    }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return isEnabled;
+
+        return contacts;
     }
+
 
     private void sendSms(String contactNumber) {
         Intent smsIntent = new Intent(Intent.ACTION_VIEW);
@@ -162,14 +240,15 @@ public class EmergencyModeActivity extends AppCompatActivity {
         startActivity(smsIntent);
     }
 
-    private String getContactNumber(Long contactId) {
+    private static String getContactNumber(Context context, Long contactId) {
         String contactNumber = null;
-        Cursor cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+        Cursor cursor = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
                 ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[]{String.valueOf(contactId)}, null);
         if (cursor != null && cursor.moveToFirst()) {
             int columnIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
             if (columnIndex >= 0) {
                 contactNumber = cursor.getString(columnIndex);
+                contactNumber = contactNumber.replace(" ", "");
             }
             cursor.close();
         }

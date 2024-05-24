@@ -64,9 +64,9 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         boolean isAppNotificationChecked = appNotification.isChecked();
         boolean isSmsNotificationChecked = smsNotification.isChecked();
 
-        String data = "Call Notification: " + isCallNotificationChecked + "\n" +
-                "App Notification: " + isAppNotificationChecked + "\n" +
-                "SMS Notification: " + isSmsNotificationChecked;
+        String data = NotificationMethod.CALL+ ": " + isCallNotificationChecked + "\n" +
+                NotificationMethod.SMS+ ": " + isAppNotificationChecked + "\n" +
+                NotificationMethod.NOTIFICATION+ ": " + isSmsNotificationChecked;
 
         FileOutputStream fos = null;
         try {
@@ -101,13 +101,13 @@ public class NotificationSettingsActivity extends AppCompatActivity {
             BufferedReader br = new BufferedReader(isr);
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.contains("Call Notification: ")) {
+                if (line.contains(NotificationMethod.CALL+ ": ")) {
                     boolean isChecked = Boolean.parseBoolean(line.split(": ")[1]);
                     callNotification.setChecked(isChecked);
-                } else if (line.contains("App Notification: ")) {
+                } else if (line.contains(NotificationMethod.NOTIFICATION+ ": ")) {
                     boolean isChecked = Boolean.parseBoolean(line.split(": ")[1]);
                     appNotification.setChecked(isChecked);
-                } else if (line.contains("SMS Notification: ")) {
+                } else if (line.contains(NotificationMethod.SMS+ ": ")) {
                     boolean isChecked = Boolean.parseBoolean(line.split(": ")[1]);
                     smsNotification.setChecked(isChecked);
                 }

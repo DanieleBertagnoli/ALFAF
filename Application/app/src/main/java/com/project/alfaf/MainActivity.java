@@ -78,6 +78,9 @@ public class MainActivity extends AppCompatActivity {
         // Start shake detection service
         Intent serviceIntent = new Intent(this, ShakeDetectionService.class);
         ContextCompat.startForegroundService(this, serviceIntent);
+
+        Intent intent = new Intent(this, FallDetectionService.class);
+        startService(intent);
     }
 
     private boolean userInfoFileExists() {

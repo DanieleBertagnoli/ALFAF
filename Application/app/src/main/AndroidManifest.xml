@@ -58,13 +58,13 @@
             </intent-filter>
         </activity>
 
+        <service android:name=".FallDetectionService" />
+
         <service
             android:name=".ShakeDetectionService"
             android:foregroundServiceType="location" />
         <service
             android:name=".PositionLoggingService"
-            android:enabled="true"
-            android:exported="true"
             android:foregroundServiceType="location" />
     </application>
 

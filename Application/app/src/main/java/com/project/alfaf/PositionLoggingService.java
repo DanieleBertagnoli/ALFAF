@@ -1,69 +1,57 @@
 package com.project.alfaf;
 
-import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import androidx.annotation.NonNull;
+import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.LinkedList;
 
 public class PositionLoggingService extends Service {
 
     private static final String CHANNEL_ID = "PositionLoggingServiceChannel";
+    private static final String LOG_TAG = "PositionLoggingService";
     private static final String LOG_FILE_NAME = "position_log.txt";
     private static final int MAX_POSITIONS = 5;
-    private FusedLocationProviderClient fusedLocationClient;
+    private LocationManager locationManager;
+    private LinkedList<String> positions = new LinkedList<>();
+    private Handler handler = new Handler(Looper.getMainLooper());
+
+    private final Runnable positionLogger = new Runnable() {
+        @Override
+        public void run() {
+            logPosition();
+            handler.postDelayed(this, 1000); // Schedule next execution
+        }
+    };
 
     @Override
     public void onCreate() {
         super.onCreate();
-        createNotificationChannel();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel();
+        }
         startForeground(1, createNotification());
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        handler.post(positionLogger); // Start logging positions
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(120000); // Sleep for 2 minutes
-                        logCurrentPosition();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        new Thread(runnable).start();
         return START_STICKY;
     }
 
@@ -73,93 +61,69 @@ public class PositionLoggingService extends Service {
         return null;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        handler.removeCallbacks(positionLogger);
+    }
+
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "Position Logging Service Channel";
-            String description = "Foreground service channel for logging positions";
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
-            channel.setDescription(description);
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Position Logging Service Channel",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(serviceChannel);
+            }
         }
     }
 
     private Notification createNotification() {
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
-
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Position Logging Service")
-                .setContentText("Running")
+                .setContentTitle("Position Logging Active")
+                .setContentText("Logging position every second")
                 .setSmallIcon(R.drawable.alert_icon)
-                .setContentIntent(pendingIntent)
                 .build();
     }
 
-    private void logCurrentPosition() {
-        // Get current position and timestamp
-        getCurrentPosition();
-    }
-
-    private void getCurrentPosition() {
-        // Check if location permissions are granted
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // Permissions are not granted, log or handle the situation
-            return;
-        }
-
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(120000); // 2 minutes interval
-
-        fusedLocationClient.requestLocationUpdates(locationRequest, new LocationCallback() {
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-                Location location = locationResult.getLastLocation();
-                if (location != null) {
-                    String currentPosition = "Latitude: " + location.getLatitude() + ", Longitude: " + location.getLongitude();
-                    String timestamp = getCurrentTimestamp();
-                    savePositionToFile(currentPosition, timestamp);
-                }
-            }
-        }, Looper.myLooper());
-    }
-
-    private String getCurrentTimestamp() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return sdf.format(new Date());
-    }
-
-    private void savePositionToFile(String position, String timestamp) {
+    private void logPosition() {
         try {
-            File file = new File(getFilesDir(), LOG_FILE_NAME);
-            if (!file.exists()) {
-                file.createNewFile();
+            locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    String position = location.getLatitude() + "," + location.getLongitude();
+                    if (positions.size() >= MAX_POSITIONS) {
+                        positions.removeFirst();
+                    }
+                    positions.add(position);
+                    savePositionsToFile();
+                }
+
+                // Deprecated method - you can safely remove it if not required
+                public void onStatusChanged(String provider, int status, @Nullable Intent extras) {}
+
+                @Override
+                public void onProviderEnabled(String provider) {}
+
+                @Override
+                public void onProviderDisabled(String provider) {}
+            }, Looper.getMainLooper());
+        } catch (SecurityException e) {
+            Log.e(LOG_TAG, "Location permission not granted.", e);
+        }
+    }
+
+    private void savePositionsToFile() {
+        File file = new File(getFilesDir(), LOG_FILE_NAME);
+        try (FileWriter writer = new FileWriter(file, false)) {
+            for (String position : positions) {
+                writer.write(position + "\n");
             }
-
-            // Read existing positions from file
-            FileInputStream fis = new FileInputStream(file);
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            StringBuilder positionsBuilder = new StringBuilder();
-            String line;
-            int positionCount = 0;
-            while ((line = reader.readLine()) != null && positionCount < MAX_POSITIONS - 1) {
-                positionsBuilder.append(line).append("\n");
-                positionCount++;
-            }
-            reader.close();
-
-            // Add new position to the beginning
-            positionsBuilder.insert(0, position + " - " + timestamp + "\n");
-
-            // Write positions back to file
-            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-            writer.write(positionsBuilder.toString());
-            writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(LOG_TAG, "Error writing to log file.", e);
         }
     }
 }

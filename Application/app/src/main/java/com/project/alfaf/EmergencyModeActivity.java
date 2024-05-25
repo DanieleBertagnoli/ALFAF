@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
@@ -18,6 +17,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
+import com.project.alfaf.enums.NotificationMethodEnum;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -107,9 +107,9 @@ public class EmergencyModeActivity extends AppCompatActivity {
         String contactNumber = getContactNumber(this, contactId);
 
         // Check notification settings
-        boolean callNotificationEnabled = isNotificationMethodEnabled(NotificationMethod.CALL, this);
-        boolean smsNotificationEnabled = isNotificationMethodEnabled(NotificationMethod.SMS, this);
-        boolean notificationEnabled = isNotificationMethodEnabled(NotificationMethod.NOTIFICATION, this);
+        boolean callNotificationEnabled = isNotificationMethodEnabled(NotificationMethodEnum.CALL, this);
+        boolean smsNotificationEnabled = isNotificationMethodEnabled(NotificationMethodEnum.SMS, this);
+        boolean notificationEnabled = isNotificationMethodEnabled(NotificationMethodEnum.NOTIFICATION, this);
 
         // Call the contact if call notification is enabled
         if (callNotificationEnabled) {
@@ -129,14 +129,14 @@ public class EmergencyModeActivity extends AppCompatActivity {
         }
     }
 
-    private static boolean isNotificationMethodEnabled(NotificationMethod notificationMethod, Context context) {
+    private static boolean isNotificationMethodEnabled(NotificationMethodEnum notificationMethodEnum, Context context) {
         boolean isEnabled = false;
         try (FileInputStream fis = context.openFileInput("notification_settings.txt");
              InputStreamReader isr = new InputStreamReader(fis);
              BufferedReader br = new BufferedReader(isr)) {
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.contains(notificationMethod + ": ")) {
+                if (line.contains(notificationMethodEnum + ": ")) {
                     isEnabled = Boolean.parseBoolean(line.split(": ")[1]);
                     break;
                 }
@@ -149,7 +149,7 @@ public class EmergencyModeActivity extends AppCompatActivity {
 
     public static void sendEmergencyNotification(Context context) {
 
-        if(!isNotificationMethodEnabled(NotificationMethod.NOTIFICATION, context)){
+        if(!isNotificationMethodEnabled(NotificationMethodEnum.NOTIFICATION, context)){
             return;
         }
         new Thread(new Runnable() {

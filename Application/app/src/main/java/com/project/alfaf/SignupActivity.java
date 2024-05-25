@@ -3,7 +3,6 @@ package com.project.alfaf;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -13,6 +12,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.project.alfaf.enums.DetectionsEnum;
+import com.project.alfaf.enums.NotificationMethodEnum;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -52,12 +54,26 @@ public class SignupActivity extends AppCompatActivity {
         });
 
         createNotificationSettingsFile();
+        createDetectionSettingsFile();
+    }
+
+    private void createDetectionSettingsFile() {
+        String data = DetectionsEnum.FALL_DETECTION + ": true\n" +
+                DetectionsEnum.SHAKE_DETECTION + ": true\n" +
+                DetectionsEnum.FIGHT_DETECTION + ": true";
+
+        try (FileOutputStream fos = openFileOutput("detection_settings.txt", MODE_PRIVATE);
+             OutputStreamWriter writer = new OutputStreamWriter(fos)) {
+            writer.write(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void createNotificationSettingsFile() {
-        String data = NotificationMethod.CALL + ": true\n" +
-                NotificationMethod.SMS + ": true\n" +
-                NotificationMethod.NOTIFICATION + ": true";
+        String data = NotificationMethodEnum.CALL + ": true\n" +
+                NotificationMethodEnum.SMS + ": true\n" +
+                NotificationMethodEnum.NOTIFICATION + ": true";
 
         try (FileOutputStream fos = openFileOutput("notification_settings.txt", MODE_PRIVATE);
              OutputStreamWriter writer = new OutputStreamWriter(fos)) {

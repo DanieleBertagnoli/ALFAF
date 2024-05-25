@@ -13,6 +13,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.project.alfaf.enums.NotificationMethodEnum;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -64,9 +66,9 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         boolean isAppNotificationChecked = appNotification.isChecked();
         boolean isSmsNotificationChecked = smsNotification.isChecked();
 
-        String data = NotificationMethod.CALL+ ": " + isCallNotificationChecked + "\n" +
-                NotificationMethod.SMS+ ": " + isAppNotificationChecked + "\n" +
-                NotificationMethod.NOTIFICATION+ ": " + isSmsNotificationChecked;
+        String data = NotificationMethodEnum.CALL+ ": " + isCallNotificationChecked + "\n" +
+                NotificationMethodEnum.SMS+ ": " + isSmsNotificationChecked + "\n" +
+                NotificationMethodEnum.NOTIFICATION+ ": " + isAppNotificationChecked;
 
         FileOutputStream fos = null;
         try {
@@ -89,25 +91,18 @@ public class NotificationSettingsActivity extends AppCompatActivity {
         FileInputStream fis = null;
         try {
             File file = new File(getFilesDir(), "notification_settings.txt");
-            if (!file.exists()) {
-                // If the file does not exist, initialize checkboxes to false
-                callNotification.setChecked(false);
-                appNotification.setChecked(false);
-                smsNotification.setChecked(false);
-                return;
-            }
             fis = openFileInput("notification_settings.txt");
             InputStreamReader isr = new InputStreamReader(fis);
             BufferedReader br = new BufferedReader(isr);
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.contains(NotificationMethod.CALL+ ": ")) {
+                if (line.contains(NotificationMethodEnum.CALL+ ": ")) {
                     boolean isChecked = Boolean.parseBoolean(line.split(": ")[1]);
                     callNotification.setChecked(isChecked);
-                } else if (line.contains(NotificationMethod.NOTIFICATION+ ": ")) {
+                } else if (line.contains(NotificationMethodEnum.NOTIFICATION+ ": ")) {
                     boolean isChecked = Boolean.parseBoolean(line.split(": ")[1]);
                     appNotification.setChecked(isChecked);
-                } else if (line.contains(NotificationMethod.SMS+ ": ")) {
+                } else if (line.contains(NotificationMethodEnum.SMS+ ": ")) {
                     boolean isChecked = Boolean.parseBoolean(line.split(": ")[1]);
                     smsNotification.setChecked(isChecked);
                 }

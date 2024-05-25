@@ -14,6 +14,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.project.alfaf.enums.DetectionsEnum;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -25,6 +26,7 @@ public class DetectionSettingsActivity extends AppCompatActivity {
 
     private SwitchMaterial fallDetectionSwitch;
     private SwitchMaterial fightDetectionSwitch;
+    private SwitchMaterial shakeDetectionSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +47,7 @@ public class DetectionSettingsActivity extends AppCompatActivity {
 
         fallDetectionSwitch = findViewById(R.id.fall_detection_option);
         fightDetectionSwitch = findViewById(R.id.fight_detection_option);
+        shakeDetectionSwitch = findViewById(R.id.shake_detection_option);
 
         // Load switch states from file
         loadSwitchStates();
@@ -59,8 +62,9 @@ public class DetectionSettingsActivity extends AppCompatActivity {
 
     private void saveSwitchStates() {
         try (FileOutputStream fos = openFileOutput("detection_settings.txt", Context.MODE_PRIVATE)) {
-            String data = "Fall Detection: " + fallDetectionSwitch.isChecked() + "\n" +
-                    "Fight Detection: " + fightDetectionSwitch.isChecked();
+            String data = DetectionsEnum.FALL_DETECTION + ": " + fallDetectionSwitch.isChecked() + "\n" +
+                    DetectionsEnum.SHAKE_DETECTION + ": " + shakeDetectionSwitch.isChecked() + "\n" +
+                    DetectionsEnum.FIGHT_DETECTION + ": " + fightDetectionSwitch.isChecked();
             fos.write(data.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
@@ -77,17 +81,20 @@ public class DetectionSettingsActivity extends AppCompatActivity {
                 if (parts.length == 2) {
                     String option = parts[0];
                     boolean isChecked = Boolean.parseBoolean(parts[1]);
-                    switch (option) {
-                        case "Fall Detection":
+                    switch (DetectionsEnum.valueOf(option)) {
+                        case FALL_DETECTION:
                             fallDetectionSwitch.setChecked(isChecked);
                             break;
-                        case "Fight Detection":
+                        case SHAKE_DETECTION:
+                            shakeDetectionSwitch.setChecked(isChecked);
+                            break;
+                        case FIGHT_DETECTION:
                             fightDetectionSwitch.setChecked(isChecked);
                             break;
                     }
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
         }
     }

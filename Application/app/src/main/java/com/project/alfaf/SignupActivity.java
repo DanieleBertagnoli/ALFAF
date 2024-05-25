@@ -1,5 +1,6 @@
 package com.project.alfaf;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.project.alfaf.enums.DetectionsEnum;
 import com.project.alfaf.enums.NotificationMethodEnum;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -53,36 +55,49 @@ public class SignupActivity extends AppCompatActivity {
             }
         });
 
-        createNotificationSettingsFile();
-        createDetectionSettingsFile();
+        createNotificationSettingsFile(this);
+        createDetectionSettingsFile(this);
+        createContactSettingsFile(this);
     }
 
-    private void createDetectionSettingsFile() {
+    public static void createDetectionSettingsFile(Context context) {
+        String fileName = "detection_settings.txt";
         String data = DetectionsEnum.FALL_DETECTION + ": true\n" +
                 DetectionsEnum.SHAKE_DETECTION + ": true\n" +
                 DetectionsEnum.FIGHT_DETECTION + ": true";
 
-        try (FileOutputStream fos = openFileOutput("detection_settings.txt", MODE_PRIVATE);
-             OutputStreamWriter writer = new OutputStreamWriter(fos)) {
-            writer.write(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        createFile(context, fileName, data);
     }
 
-    private void createNotificationSettingsFile() {
+    public static void createContactSettingsFile(Context context) {
+        String fileName = "contacts.txt";
+        String data = "";
+
+        createFile(context, fileName, data);
+    }
+
+    public static void createNotificationSettingsFile(Context context) {
+        String fileName = "notification_settings.txt";
         String data = NotificationMethodEnum.CALL + ": true\n" +
                 NotificationMethodEnum.SMS + ": true\n" +
                 NotificationMethodEnum.NOTIFICATION + ": true";
 
-        try (FileOutputStream fos = openFileOutput("notification_settings.txt", MODE_PRIVATE);
+        createFile(context, fileName, data);
+    }
+
+    private static void createFile(Context context, String fileName, String data) {
+        File file = new File(context.getFilesDir(), fileName);
+        if (file.exists()) {
+            context.deleteFile(fileName);
+        }
+
+        try (FileOutputStream fos = context.openFileOutput(fileName, MODE_PRIVATE);
              OutputStreamWriter writer = new OutputStreamWriter(fos)) {
             writer.write(data);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
     private void saveUserInfo(String name, String phoneNumber) {
         String userInfo = name + " " + phoneNumber;
@@ -133,5 +148,4 @@ public class SignupActivity extends AppCompatActivity {
                 .setPositiveButton("OK", null)
                 .show();
     }
-
 }

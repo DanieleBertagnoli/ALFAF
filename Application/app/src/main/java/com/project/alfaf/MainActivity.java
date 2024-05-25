@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -17,25 +18,23 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
+import com.project.alfaf.enums.DetectionsEnum;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-    private static final int CALL_PERMISSION_REQUEST_CODE = 1001;
-    private static final int SENSOR_PERMISSION_REQUEST_CODE = 1002;
+    private static final int PERMISSION_REQUEST_CODE = 1;
     private static final String USER_INFO_FILE_NAME = "user_info.txt";
     private static final String DETECTION_SETTINGS_FILE_NAME = "detection_settings.txt";
 
     private boolean isFallDetectionEnabled = false;
     private boolean isShakeDetectionEnabled = false;
+    private boolean isFightDetectionEnabled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,16 +58,8 @@ public class MainActivity extends AppCompatActivity {
         // Load detection settings
         loadDetectionSettings();
 
-        // Request location permissions if not granted
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-            }, LOCATION_PERMISSION_REQUEST_CODE);
-        } else {
-            startLoggingService();
-        }
+        // Request necessary permissions
+        requestNecessaryPermissions();
 
         // Add event listener to emergency button
         MaterialButton emergencyBtn = findViewById(R.id.emergency_btn);
@@ -83,18 +74,6 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, SettingsActivity.class); // Assuming SettingsActivity
             startActivity(intent);
         });
-
-        // Request call permissions if not granted
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, CALL_PERMISSION_REQUEST_CODE);
-        }
-
-        // Request sensor permissions if not granted
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BODY_SENSORS}, SENSOR_PERMISSION_REQUEST_CODE);
-        } else {
-            startDetectionServices();
-        }
     }
 
     private boolean userInfoFileExists() {
@@ -142,14 +121,16 @@ public class MainActivity extends AppCompatActivity {
                 if (parts.length == 2) {
                     String option = parts[0];
                     boolean isChecked = Boolean.parseBoolean(parts[1]);
-                    switch (option) {
-                        case "Fall Detection":
+                    switch (DetectionsEnum.valueOf(option)) {
+                        case FALL_DETECTION:
                             isFallDetectionEnabled = isChecked;
                             break;
-                        case "Shake Detection":
+                        case SHAKE_DETECTION:
                             isShakeDetectionEnabled = isChecked;
                             break;
-                        // Add more cases here if needed
+                        case FIGHT_DETECTION:
+                            isFightDetectionEnabled = isChecked;
+                            break;
                     }
                 }
             }
@@ -158,16 +139,49 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void requestNecessaryPermissions() {
+        String[] permissions = {
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.CALL_PHONE,
+                Manifest.permission.SEND_SMS
+        };
+
+        boolean allPermissionsGranted = true;
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                allPermissionsGranted = false;
+                break;
+            }
+        }
+
+        if (!allPermissionsGranted) {
+            ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE);
+        } else {
+            // Start services if all permissions are already granted
+            startLoggingService();
+            startDetectionServices();
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startLoggingService();
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            boolean allPermissionsGranted = true;
+            for (int grantResult : grantResults) {
+                if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                    allPermissionsGranted = false;
+                    break;
+                }
             }
-        } else if (requestCode == SENSOR_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            if (allPermissionsGranted) {
+                startLoggingService();
                 startDetectionServices();
+            } else {
+                // Handle the case where permissions are not granted
+                // You can show a message to the user or disable certain features
             }
         }
     }

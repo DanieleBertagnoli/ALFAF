@@ -1,10 +1,14 @@
 package com.project.alfaf;
 
 import android.os.Bundle;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 
 public class SettingsActivity extends AppCompatActivity {
@@ -34,6 +38,29 @@ public class SettingsActivity extends AppCompatActivity {
         detectionsBtn.setOnClickListener(v -> {
             Intent intent = new Intent(this, DetectionSettingsActivity.class);
             startActivity(intent);
+        });
+
+        // Inside onCreate() method
+        Button resetBtn = findViewById(R.id.btn_reset);
+        resetBtn.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Confirm Reset");
+            builder.setMessage("Are you sure you want to reset all settings?");
+            builder.setPositiveButton("Yes", (dialog, which) -> {
+                // User clicked Yes button
+                // Reset the settings here
+                SignupActivity.createNotificationSettingsFile(getApplicationContext());
+                SignupActivity.createDetectionSettingsFile(getApplicationContext());
+                SignupActivity.createContactSettingsFile(getApplicationContext());
+                Toast.makeText(this, "All settings have been reset!", Toast.LENGTH_LONG).show();
+            });
+            builder.setNegativeButton("No", (dialog, which) -> {
+                // User clicked No button
+                // Do nothing, just dismiss the dialog
+                dialog.dismiss();
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
         });
     }
 }

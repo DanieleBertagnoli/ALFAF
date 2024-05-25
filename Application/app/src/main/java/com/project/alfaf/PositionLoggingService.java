@@ -94,16 +94,13 @@ public class PositionLoggingService extends Service {
             locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
-                    String position = location.getLatitude() + "," + location.getLongitude();
+                    String position = location.getLatitude() + " " + location.getLongitude();
                     if (positions.size() >= MAX_POSITIONS) {
                         positions.removeFirst();
                     }
                     positions.add(position);
                     savePositionsToFile();
                 }
-
-                // Deprecated method - you can safely remove it if not required
-                public void onStatusChanged(String provider, int status, @Nullable Intent extras) {}
 
                 @Override
                 public void onProviderEnabled(String provider) {}

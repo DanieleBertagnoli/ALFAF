@@ -24,6 +24,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -122,13 +123,17 @@ public class ContactsSettingsActivity extends AppCompatActivity {
     }
 
     private void saveContactsToFile(ArrayList<String> contacts, ArrayList<Long> contactIds) {
-        try (FileOutputStream fos = openFileOutput("contacts.txt", Context.MODE_PRIVATE)) {
+        try {
+            FileOutputStream fos;
+            fos = openFileOutput("contacts.txt", Context.MODE_PRIVATE);
+            // Write contacts to the file
             for (int i = 0; i < contacts.size(); i++) {
                 String contact = contacts.get(i);
                 Long contactId = contactIds.get(i);
-                String data = contact + " " + contactId + "\n";
+                String data = contact + "," + contactId + "\n";
                 fos.write(data.getBytes());
             }
+            fos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

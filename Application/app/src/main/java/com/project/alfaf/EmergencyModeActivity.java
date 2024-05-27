@@ -94,51 +94,61 @@ public class EmergencyModeActivity extends AppCompatActivity {
     }
 
     private void manageEmergency() {
-        // Retrieve the first contact from the list
-        Long contactId = null;
+        List<Long> contactIds = new ArrayList<>();
+        List<String> contactNumbers = new ArrayList<>();
+        Long firstContactId = null;
+        String firstContactNumber = null;
+
         try (FileInputStream fis = openFileInput("contacts.txt");
              InputStreamReader isr = new InputStreamReader(fis);
              BufferedReader br = new BufferedReader(isr)) {
             String line;
-            if ((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
                 if (parts.length == 2) {
-                    contactId = Long.parseLong(parts[1]);
+                    Long contactId = Long.parseLong(parts[1]);
+                    String contactNumber = getContactNumber(this, contactId);
+
+                    contactIds.add(contactId);
+                    contactNumbers.add(contactNumber);
+
+                    if (firstContactId == null) {
+                        firstContactId = contactId;
+                        firstContactNumber = contactNumber;
+                    }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        // Get the contact number using the contact name or ID
-        String contactNumber = getContactNumber(this, contactId);
-
         // Check notification settings
         boolean callNotificationEnabled = isNotificationMethodEnabled(NotificationMethodEnum.CALL, this);
         boolean smsNotificationEnabled = isNotificationMethodEnabled(NotificationMethodEnum.SMS, this);
         boolean notificationEnabled = isNotificationMethodEnabled(NotificationMethodEnum.NOTIFICATION, this);
 
-        // Call the contact if call notification is enabled
-        if (callNotificationEnabled) {
+        // Call the first contact if call notification is enabled
+        if (callNotificationEnabled && firstContactNumber != null) {
             Intent callIntent = new Intent(Intent.ACTION_CALL);
-            callIntent.setData(Uri.parse("tel:" + contactNumber));
+            callIntent.setData(Uri.parse("tel:" + firstContactNumber));
             startActivity(callIntent);
         }
 
-        // Send SMS if SMS notification is enabled
-        if (smsNotificationEnabled) {
-
-            if(ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED){
-                sendSms(contactNumber);
+        // Notify all contacts if any notification method is enabled
+        for (String contactNumber : contactNumbers) {
+            // Send SMS if SMS notification is enabled
+            if (smsNotificationEnabled) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
+                    sendSms(contactNumber);
+                } else {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 100);
+                }
             }
-            else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 100);
-            }
-        }
 
-        // Send SMS if SMS notification is enabled
-        if (notificationEnabled) {
-            sendEmergencyNotification(this);
+            // Send app notification if enabled
+            if (notificationEnabled) {
+                sendEmergencyNotification(this);
+            }
         }
     }
 

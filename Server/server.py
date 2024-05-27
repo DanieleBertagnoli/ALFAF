@@ -1,7 +1,15 @@
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import messaging
 from flask import Flask, request, jsonify
+
+# Initialize Firebase Admin SDK
+cred = credentials.Certificate('./fcm.json')
+firebase_admin.initialize_app(cred)
 
 app = Flask(__name__)
 USER_INFO_FILE = 'known_users.txt'
+FCM_TOKENS_FILE = 'fcm_tokens.txt'
 
 
 @app.route('/', methods=['POST'])
@@ -15,7 +23,9 @@ def handle_requests():
     if command == 'new_user':
         return register_user(data[1:])
     elif command == 'emergency':
-        return handle_emergency(data[1:])
+        return handle_emergency(data[2:], data[1])
+    elif command == 'register_token':
+        return register_fcm_token(data[1:])
 
     return jsonify({'status': 'error', 'message': 'Invalid command'}), 400
 
@@ -25,6 +35,8 @@ def register_user(user_info):
         return jsonify({'status': 'error', 'message': 'Invalid user info'}), 400
 
     name, phone_number = user_info
+    phone_number = phone_number.replace('(', '').replace(')', '').replace('-', '')
+
     user_info_str = f"{name} {phone_number}\n"
     with open(USER_INFO_FILE, 'a') as file:
         file.write(user_info_str)
@@ -32,11 +44,90 @@ def register_user(user_info):
     return jsonify({'status': 'success', 'message': 'User registered successfully'}), 200
 
 
-def handle_emergency(phone_numbers):
-    with open('emergency_alert.txt', 'a') as file:
-        file.write('Emergency alert received\n')
+def handle_emergency(phone_numbers, sender):
+    if not phone_numbers:
+        return jsonify({'status': 'error', 'message': 'No phone numbers provided'}), 400
 
-    return jsonify({'status': 'success', 'message': 'Emergency alert received'}), 200
+    with open('emergency_alert.txt', 'a') as file:
+        file.write(f'Emergency alert received by {sender}\n')
+
+    for phone_number in phone_numbers:
+        phone_number = phone_number.replace('(', '').replace(')', '').replace('-', '')
+        user_info = get_user_info(phone_number)
+        if user_info:
+            name, _ = user_info
+            send_notification(phone_number, name, sender)
+        else:
+            print(f'No user info found for {phone_number}')
+
+    return jsonify({'status': 'success', 'message': 'Emergency alerts sent'}), 200
+
+
+def register_fcm_token(token_info):
+    if len(token_info) != 2:
+        return jsonify({'status': 'error', 'message': 'Invalid token info'}), 400
+
+    phone_number, fcm_token = token_info
+    phone_number = phone_number.replace('(', '').replace(')', '').replace('-', '')
+
+    tokens = {}
+    try:
+        with open(FCM_TOKENS_FILE, 'r') as file:
+            for line in file:
+                stored_phone_number, stored_token = line.strip().split()
+                tokens[stored_phone_number] = stored_token
+    except FileNotFoundError:
+        pass
+
+    tokens[phone_number] = fcm_token
+
+    with open(FCM_TOKENS_FILE, 'w') as file:
+        for pn, token in tokens.items():
+            file.write(f"{pn} {token}\n")
+
+    return jsonify({'status': 'success', 'message': 'FCM token registered successfully'}), 200
+
+
+def send_notification(phone_number, name, sender):
+    fcm_token = get_fcm_token(phone_number)
+    if fcm_token:
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title="Emergency Alert",
+                body=f"{name}, {sender} needs help! Location: [Insert Last Known Location]"
+            ),
+            token=fcm_token
+        )
+
+        # Send the message
+        response = messaging.send(message)
+        print(f'Successfully sent message: {response}')
+    else:
+        print(f'No FCM token found for {phone_number}')
+
+
+def get_fcm_token(phone_number):
+    try:
+        with open(FCM_TOKENS_FILE, 'r') as file:
+            for line in file:
+                stored_phone_number, fcm_token = line.strip().split()
+                if stored_phone_number == phone_number:
+                    return fcm_token
+    except FileNotFoundError:
+        print('FCM tokens file not found.')
+    return None
+
+
+def get_user_info(phone_number):
+    try:
+        with open(USER_INFO_FILE, 'r') as file:
+            for line in file:
+                name, stored_phone_number = line.strip().split()
+                if stored_phone_number == phone_number:
+                    return name, stored_phone_number
+    except FileNotFoundError:
+        print('User info file not found.')
+    return None
 
 
 if __name__ == '__main__':

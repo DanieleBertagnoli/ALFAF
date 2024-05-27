@@ -144,11 +144,11 @@ public class EmergencyModeActivity extends AppCompatActivity {
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 100);
                 }
             }
+        }
 
-            // Send app notification if enabled
-            if (notificationEnabled) {
-                sendEmergencyNotification(this);
-            }
+        // Send app notification if enabled
+        if (notificationEnabled) {
+            sendEmergencyNotification(this);
         }
     }
 

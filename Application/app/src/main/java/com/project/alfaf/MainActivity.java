@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
@@ -18,6 +19,8 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.button.MaterialButton;
 import com.project.alfaf.enums.DetectionsEnum;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 1;
     private static final String USER_INFO_FILE_NAME = "user_info.txt";
     private static final String DETECTION_SETTINGS_FILE_NAME = "detection_settings.txt";
+    private static final String TAG = "MainActivity";
 
     private boolean isFallDetectionEnabled = false;
     private boolean isShakeDetectionEnabled = false;
@@ -72,6 +76,9 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, SettingsActivity.class); // Assuming SettingsActivity
             startActivity(intent);
         });
+
+        Intent serviceIntent = new Intent(this, FirebaseNotificationService.class);
+        ContextCompat.startForegroundService(this, serviceIntent);
     }
 
     private boolean userInfoFileExists() {

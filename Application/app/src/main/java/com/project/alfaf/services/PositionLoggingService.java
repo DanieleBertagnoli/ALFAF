@@ -20,7 +20,10 @@ import com.project.alfaf.R;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
+import java.util.Locale;
 
 public class PositionLoggingService extends Service {
 
@@ -37,7 +40,7 @@ public class PositionLoggingService extends Service {
         @Override
         public void run() {
             logPosition();
-            handler.postDelayed(this, 1000); // Schedule next execution
+            handler.postDelayed(this, 120000); // Schedule next execution
         }
     };
 
@@ -84,7 +87,7 @@ public class PositionLoggingService extends Service {
     private Notification createNotification() {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Position Logging Active")
-                .setContentText("Logging position every second")
+                .setContentText("Logging position every 2 minutes")
                 .setSmallIcon(R.drawable.alert_icon)
                 .build();
     }
@@ -94,7 +97,8 @@ public class PositionLoggingService extends Service {
             locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
-                    String position = location.getLatitude() + " " + location.getLongitude();
+                    String timestamp = new SimpleDateFormat("dd/MM/yy HH:mm", Locale.getDefault()).format(new Date());
+                    String position = location.getLatitude() + " " + location.getLongitude() + " " + timestamp;
                     if (positions.size() >= MAX_POSITIONS) {
                         positions.removeFirst();
                     }

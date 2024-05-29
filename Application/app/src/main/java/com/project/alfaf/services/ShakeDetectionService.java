@@ -27,7 +27,7 @@ import com.project.alfaf.R;
 public class ShakeDetectionService extends Service implements SensorEventListener {
 
     private static final String CHANNEL_ID = "ShakeDetectionChannel";
-    private static final int NOTIFICATION_ID = 3;  // Unique notification ID
+    private static final int NOTIFICATION_ID = 3;
     private static final float SHAKE_THRESHOLD_GRAVITY = 2.7F;
     private static final int SHAKE_SLOP_TIME_MS = 500;
     private static final int SHAKE_COUNT_RESET_TIME_MS = 3000;

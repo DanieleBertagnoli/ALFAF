@@ -23,7 +23,7 @@ def handle_requests():
     if command == 'new_user':
         return register_user(data[1:])
     elif command == 'emergency':
-        return handle_emergency(data[2:], data[1])
+        return handle_emergency(data[3:], data[1], data[2])
     elif command == 'register_token':
         return register_fcm_token(data[1:])
 
@@ -44,7 +44,7 @@ def register_user(user_info):
     return jsonify({'status': 'success', 'message': 'User registered successfully'}), 200
 
 
-def handle_emergency(phone_numbers, sender):
+def handle_emergency(phone_numbers, sender, positions):
     if not phone_numbers:
         return jsonify({'status': 'error', 'message': 'No phone numbers provided'}), 400
 
@@ -56,7 +56,8 @@ def handle_emergency(phone_numbers, sender):
         user_info = get_user_info(phone_number)
         if user_info:
             name, _ = user_info
-            send_notification(phone_number, name, sender)
+            positions = positions.split('_')[:-1]
+            send_notification(phone_number, name, sender, positions)
         else:
             print(f'No user info found for {phone_number}')
 
@@ -88,14 +89,18 @@ def register_fcm_token(token_info):
     return jsonify({'status': 'success', 'message': 'FCM token registered successfully'}), 200
 
 
-def send_notification(phone_number, name, sender):
+def send_notification(phone_number, name, sender, positions):
     fcm_token = get_fcm_token(phone_number)
     if fcm_token:
+        body = f"{name}, {sender} needs help! Location: "
+        for i in range(0, len(positions), 4):
+            body += f'\n{positions[i]} {positions[i+1]} {positions[i+2]} {positions[i+3]}'
+
         message = messaging.Message(
-            notification=messaging.Notification(
-                title="Emergency Alert",
-                body=f"{name}, {sender} needs help! Location: [Insert Last Known Location]"
-            ),
+            data={
+                'title': "Emergency Alert",
+                'body': body
+            },
             token=fcm_token
         )
 
@@ -104,6 +109,7 @@ def send_notification(phone_number, name, sender):
         print(f'Successfully sent message: {response}')
     else:
         print(f'No FCM token found for {phone_number}')
+
 
 
 def get_fcm_token(phone_number):

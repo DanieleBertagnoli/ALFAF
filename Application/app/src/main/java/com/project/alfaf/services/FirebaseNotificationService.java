@@ -3,6 +3,8 @@ package com.project.alfaf.services;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
@@ -11,6 +13,9 @@ import androidx.core.app.NotificationCompat;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.project.alfaf.EmergencyMapActivity;
+import com.project.alfaf.MainActivity;
+import com.project.alfaf.SettingsActivity;
 import com.project.alfaf.R;
 
 import java.io.BufferedReader;
@@ -20,6 +25,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class FirebaseNotificationService extends FirebaseMessagingService {
 
@@ -33,10 +40,15 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Firebase Notification Service")
                 .setContentText("Listening for Firebase messages")
                 .setSmallIcon(R.drawable.alert_icon)
+                .setContentIntent(pendingIntent)
                 .build();
         startForeground(NOTIFICATION_ID, notification);
 
@@ -60,11 +72,38 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        Log.d(TAG, "From: " + remoteMessage.getFrom());
-        if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Notification Message Body: " + remoteMessage.getNotification().getBody());
+        // Check if message contains a data payload.
+        if (!remoteMessage.getData().isEmpty()) {
+
+            String messageTitle = remoteMessage.getData().get("title");
+            String messageBody = remoteMessage.getData().get("body");
+
+            String[] lines = messageBody.split("\\n");
+            ArrayList<String> lastKnownPositions = new ArrayList<>(Arrays.asList(lines));
+            lastKnownPositions.remove(0);
+
+            sendNotification(messageTitle, messageBody, lastKnownPositions);
         }
     }
+
+
+    private void sendNotification(String title, String body, ArrayList<String> lastKnownPositions) {
+        Intent intent = new Intent(this, EmergencyMapActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putStringArrayListExtra("lastKnownPositions", lastKnownPositions);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.alert_icon)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+    }
+
 
     private void sendRegistrationToServer(String token) {
         new Thread(() -> {

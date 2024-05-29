@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
@@ -19,7 +18,10 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.button.MaterialButton;
 import com.project.alfaf.enums.DetectionsEnum;
 
-import com.google.firebase.messaging.FirebaseMessaging;
+import com.project.alfaf.services.FallDetectionService;
+import com.project.alfaf.services.FirebaseNotificationService;
+import com.project.alfaf.services.PositionLoggingService;
+import com.project.alfaf.services.ShakeDetectionService;
 
 import java.io.BufferedReader;
 import java.io.File;

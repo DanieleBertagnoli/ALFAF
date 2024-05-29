@@ -1,4 +1,4 @@
-package com.project.alfaf;
+package com.project.alfaf.services;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -17,10 +17,13 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
+import com.project.alfaf.MainActivity;
+import com.project.alfaf.R;
+
 public class FallDetectionService extends Service implements SensorEventListener {
 
     private static final String CHANNEL_ID = "FallDetectionServiceChannel";
-    private static final int NOTIFICATION_ID = 1;
+    private static final int NOTIFICATION_ID = 1002;
     private static final float FALL_THRESHOLD = 2.0f; // Threshold value for free fall detection
 
     private SensorManager sensorManager;
@@ -116,7 +119,7 @@ public class FallDetectionService extends Service implements SensorEventListener
                 .build();
 
         if (notificationManager != null) {
-            notificationManager.notify(NOTIFICATION_ID + 1, notification);
+            notificationManager.notify(NOTIFICATION_ID + 1, notification); // Ensure unique ID for the alert
         }
     }
 }

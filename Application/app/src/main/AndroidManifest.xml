@@ -58,17 +58,17 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".FallDetectionService" />
+        <service android:name=".services.FallDetectionService" />
 
         <service
-            android:name=".ShakeDetectionService"
+            android:name=".services.ShakeDetectionService"
             android:foregroundServiceType="location" />
         <service
-            android:name=".PositionLoggingService"
+            android:name=".services.PositionLoggingService"
             android:foregroundServiceType="location" />
 
         <service
-            android:name=".FirebaseNotificationService"
+            android:name=".services.FirebaseNotificationService"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="false"/>
 

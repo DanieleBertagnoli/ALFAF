@@ -1,4 +1,4 @@
-package com.project.alfaf;
+package com.project.alfaf.services;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -17,23 +17,17 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import com.project.alfaf.EmergencyModeActivity;
+import com.project.alfaf.MainActivity;
+import com.project.alfaf.R;
 
 public class ShakeDetectionService extends Service implements SensorEventListener {
 
     private static final String CHANNEL_ID = "ShakeDetectionChannel";
-    private static final int NOTIFICATION_ID = 1;
+    private static final int NOTIFICATION_ID = 3;  // Unique notification ID
     private static final float SHAKE_THRESHOLD_GRAVITY = 2.7F;
     private static final int SHAKE_SLOP_TIME_MS = 500;
     private static final int SHAKE_COUNT_RESET_TIME_MS = 3000;
@@ -130,7 +124,7 @@ public class ShakeDetectionService extends Service implements SensorEventListene
                 .build();
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(NOTIFICATION_ID, notification);
+        notificationManager.notify(NOTIFICATION_ID + 1, notification);  // Ensure unique notification ID
 
         // Start the timer
         startTimer();

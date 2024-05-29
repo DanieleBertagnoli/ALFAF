@@ -1,12 +1,9 @@
-package com.project.alfaf;
+package com.project.alfaf.services;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.Service;
-import android.content.Intent;
 import android.os.Build;
-import android.os.IBinder;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -14,6 +11,7 @@ import androidx.core.app.NotificationCompat;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.project.alfaf.R;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,6 +27,7 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
     private static final String CHANNEL_ID = "FirebaseNotificationChannel";
     private static final String SERVER_URL = "http://100.75.230.21:5000";
     private static final String FILE_NAME = "user_info.txt";
+    private static final int NOTIFICATION_ID = 1001;
 
     @Override
     public void onCreate() {
@@ -39,7 +38,7 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
                 .setContentText("Listening for Firebase messages")
                 .setSmallIcon(R.drawable.alert_icon)
                 .build();
-        startForeground(1, notification);
+        startForeground(NOTIFICATION_ID, notification);
 
         FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
             if (!task.isSuccessful()) {

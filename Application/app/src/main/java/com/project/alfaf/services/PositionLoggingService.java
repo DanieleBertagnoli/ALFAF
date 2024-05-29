@@ -1,4 +1,4 @@
-package com.project.alfaf;
+package com.project.alfaf.services;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -15,6 +15,7 @@ import android.os.Looper;
 import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import com.project.alfaf.R;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -26,6 +27,7 @@ public class PositionLoggingService extends Service {
     private static final String CHANNEL_ID = "PositionLoggingServiceChannel";
     private static final String LOG_TAG = "PositionLoggingService";
     private static final String LOG_FILE_NAME = "position_log.txt";
+    private static final int NOTIFICATION_ID = 2;  // Unique notification ID
     private static final int MAX_POSITIONS = 5;
     private LocationManager locationManager;
     private LinkedList<String> positions = new LinkedList<>();
@@ -42,10 +44,8 @@ public class PositionLoggingService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel();
-        }
-        startForeground(1, createNotification());
+        createNotificationChannel();
+        startForeground(NOTIFICATION_ID, createNotification());
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         handler.post(positionLogger); // Start logging positions
     }

@@ -2,3 +2,8 @@ Report/*
 !Report/report.tex
 !Report/report.pdf
 !Report/Images
+
+Server/*
+!Server/fcm.json
+!Server/requirements.txt
+!Server/server.py

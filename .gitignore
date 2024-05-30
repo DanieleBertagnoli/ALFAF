@@ -2,3 +2,7 @@ Report/*
 !Report/report.tex
 !Report/report.pdf
 !Report/Images
+./Server/venv/
+./Server/known_user.txt
+./Server/emergency_alert.txt
+./Server/fcm_tokens.txt

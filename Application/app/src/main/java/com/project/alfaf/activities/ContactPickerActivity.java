@@ -1,4 +1,4 @@
-package com.project.alfaf;
+package com.project.alfaf.activities;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -18,6 +18,8 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.project.alfaf.R;
 
 import java.util.ArrayList;
 import java.util.HashSet;

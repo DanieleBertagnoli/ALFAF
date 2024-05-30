@@ -17,7 +17,7 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-import com.project.alfaf.MainActivity;
+import com.project.alfaf.activities.MainActivity;
 import com.project.alfaf.R;
 
 public class FallDetectionService extends Service implements SensorEventListener {

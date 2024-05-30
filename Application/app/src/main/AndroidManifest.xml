@@ -38,32 +38,32 @@
             android:value="FirebaseNotificationChannel" />
 
         <activity
-            android:name=".EmergencyMapActivity"
+            android:name=".activities.EmergencyMapActivity"
             android:exported="false"
             android:label="@string/title_activity_emergency_map" />
         <activity
-            android:name=".SignupActivity"
+            android:name=".activities.SignupActivity"
             android:exported="false" />
         <activity
-            android:name=".DetectionSettingsActivity"
+            android:name=".activities.DetectionSettingsActivity"
             android:exported="false" />
         <activity
-            android:name=".NotificationSettingsActivity"
+            android:name=".activities.NotificationSettingsActivity"
             android:exported="false" />
         <activity
-            android:name=".SettingsActivity"
+            android:name=".activities.SettingsActivity"
             android:exported="false" />
         <activity
-            android:name=".ContactPickerActivity"
+            android:name=".activities.ContactPickerActivity"
             android:exported="false" />
         <activity
-            android:name=".ContactsSettingsActivity"
+            android:name=".activities.ContactsSettingsActivity"
             android:exported="false" />
         <activity
-            android:name=".EmergencyModeActivity"
+            android:name=".activities.EmergencyModeActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

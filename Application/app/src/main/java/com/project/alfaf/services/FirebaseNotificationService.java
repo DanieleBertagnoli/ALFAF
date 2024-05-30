@@ -4,18 +4,20 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.NotificationCompat;
 
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import com.project.alfaf.EmergencyMapActivity;
-import com.project.alfaf.MainActivity;
-import com.project.alfaf.SettingsActivity;
+import com.project.alfaf.activities.EmergencyMapActivity;
+import com.project.alfaf.activities.MainActivity;
 import com.project.alfaf.R;
 
 import java.io.BufferedReader;
@@ -27,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import android.content.SharedPreferences;
 
 public class FirebaseNotificationService extends FirebaseMessagingService {
 
@@ -35,6 +38,8 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
     private static final String SERVER_URL = "http://100.75.230.21:5000";
     private static final String FILE_NAME = "user_info.txt";
     private static final int NOTIFICATION_ID = 1001;
+    private static final String TOKEN_KEY = "firebase_token";
+    private static final String PREFS_NAME = "com.project.alfaf.PREFERENCE_FILE_KEY";
 
     @Override
     public void onCreate() {
@@ -51,30 +56,19 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
                 .setContentIntent(pendingIntent)
                 .build();
         startForeground(NOTIFICATION_ID, notification);
-
-        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
-            if (!task.isSuccessful()) {
-                Log.w(TAG, "Fetching FCM registration token failed", task.getException());
-                return;
-            }
-
-            // Get new FCM registration token
-            String token = task.getResult();
-            sendRegistrationToServer(token);
-        });
     }
 
     @Override
     public void onNewToken(String token) {
         Log.d(TAG, "Refreshed token: " + token);
-        sendRegistrationToServer(token);
+        saveTokenToPreferences(token);
+        sendRegistrationToServer(this);
     }
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // Check if message contains a data payload.
         if (!remoteMessage.getData().isEmpty()) {
-
             String messageTitle = remoteMessage.getData().get("title");
             String messageBody = remoteMessage.getData().get("body");
 
@@ -85,7 +79,6 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
             sendNotification(messageTitle, messageBody, lastKnownPositions);
         }
     }
-
 
     private void sendNotification(String title, String body, ArrayList<String> lastKnownPositions) {
         Intent intent = new Intent(this, EmergencyMapActivity.class);
@@ -104,13 +97,13 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
         notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 
-
-    private void sendRegistrationToServer(String token) {
+    public static void sendRegistrationToServer(Context context) {
         new Thread(() -> {
             try {
-                String phoneNumber = getPhoneNumberFromFile();
+                String token = getTokenFromPreferences(context);
+                String phoneNumber = getPhoneNumberFromFile(context);
 
-                if (phoneNumber != null) {
+                if (phoneNumber != null && token != null) {
                     URL url = new URL(SERVER_URL);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestMethod("POST");
@@ -129,16 +122,16 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
 
                     conn.disconnect();
                 } else {
-                    Log.e(TAG, "Phone number is null, could not send registration to server.");
+                    Log.e(TAG, "Phone number or token is null, could not send registration to server.");
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, "Error sending registration to server: " + e.getMessage(), e);
             }
         }).start();
     }
 
-    private String getPhoneNumberFromFile() {
-        File file = new File(getFilesDir(), FILE_NAME);
+    private static String getPhoneNumberFromFile(Context context) {
+        File file = new File(context.getFilesDir(), FILE_NAME);
         if (file.exists()) {
             try (FileInputStream fis = new FileInputStream(file);
                  InputStreamReader isr = new InputStreamReader(fis);
@@ -151,7 +144,7 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, "Error reading phone number from file: " + e.getMessage(), e);
             }
         } else {
             Log.e(TAG, "User info file does not exist.");
@@ -172,5 +165,17 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
                 notificationManager.createNotificationChannel(channel);
             }
         }
+    }
+
+    private void saveTokenToPreferences(String token) {
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(TOKEN_KEY, token);
+        editor.apply();
+    }
+
+    private static String getTokenFromPreferences(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        return sharedPreferences.getString(TOKEN_KEY, null);
     }
 }

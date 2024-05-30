@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     android:background="#2E2E2E"
     android:paddingVertical="30dp"
-    tools:context=".ContactsSettingsActivity">
+    tools:context=".activities.ContactsSettingsActivity">
 
     <TextView
         android:id="@+id/contact_name"

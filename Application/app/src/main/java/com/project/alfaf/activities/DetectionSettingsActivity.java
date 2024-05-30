@@ -1,11 +1,10 @@
-package com.project.alfaf;
+package com.project.alfaf.activities;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Switch;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +13,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.project.alfaf.R;
 import com.project.alfaf.enums.DetectionsEnum;
 
 import java.io.BufferedReader;

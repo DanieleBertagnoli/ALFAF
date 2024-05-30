@@ -1,4 +1,4 @@
-package com.project.alfaf;
+package com.project.alfaf.activities;
 
 import android.Manifest;
 import android.content.Context;
@@ -23,8 +23,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.project.alfaf.R;
+
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;

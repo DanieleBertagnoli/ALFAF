@@ -1,4 +1,4 @@
-package com.project.alfaf;
+package com.project.alfaf.activities;
 
 import android.os.Bundle;
 
@@ -9,6 +9,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import com.project.alfaf.R;
 
 
 public class SettingsActivity extends AppCompatActivity {
@@ -52,6 +54,8 @@ public class SettingsActivity extends AppCompatActivity {
                 SignupActivity.createNotificationSettingsFile(getApplicationContext());
                 SignupActivity.createDetectionSettingsFile(getApplicationContext());
                 SignupActivity.createContactSettingsFile(getApplicationContext());
+                Intent intent = new Intent(this, SignupActivity.class);
+                startActivity(intent);
                 Toast.makeText(this, "All settings have been reset!", Toast.LENGTH_LONG).show();
             });
             builder.setNegativeButton("No", (dialog, which) -> {

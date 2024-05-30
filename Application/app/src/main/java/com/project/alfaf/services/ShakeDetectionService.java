@@ -20,8 +20,9 @@ import android.os.Looper;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
-import com.project.alfaf.EmergencyModeActivity;
-import com.project.alfaf.MainActivity;
+import com.project.alfaf.activities.EmergencyModeActivity;
+import com.project.alfaf.activities.MainActivity;
+import com.project.alfaf.utils.MyApp;
 import com.project.alfaf.R;
 
 public class ShakeDetectionService extends Service implements SensorEventListener {
@@ -105,8 +106,18 @@ public class ShakeDetectionService extends Service implements SensorEventListene
             mShakeCount++;
 
             if (mShakeCount > 0) {
-                sendShakeDetectedNotification();
+                handleShakeEvent();
             }
+        }
+    }
+
+    private void handleShakeEvent() {
+        if (MyApp.isAppInForeground()) {
+            Intent intent = new Intent(this, EmergencyModeActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } else {
+            sendShakeDetectedNotification();
         }
     }
 

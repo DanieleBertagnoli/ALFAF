@@ -1,4 +1,4 @@
-package com.project.alfaf;
+package com.project.alfaf.activities;
 
 import android.Manifest;
 import android.content.Intent;
@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
+import com.project.alfaf.R;
 import com.project.alfaf.enums.DetectionsEnum;
 
 import com.project.alfaf.services.FallDetectionService;
@@ -58,6 +59,10 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
+        else{
+            Intent serviceIntent = new Intent(this, FirebaseNotificationService.class);
+            ContextCompat.startForegroundService(this, serviceIntent);
+        }
 
         // Load detection settings
         loadDetectionSettings();
@@ -79,8 +84,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        Intent serviceIntent = new Intent(this, FirebaseNotificationService.class);
-        ContextCompat.startForegroundService(this, serviceIntent);
+        FirebaseNotificationService.sendRegistrationToServer(this);
     }
 
     private boolean userInfoFileExists() {

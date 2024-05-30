@@ -1,4 +1,4 @@
-package com.project.alfaf;
+package com.project.alfaf.activities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.project.alfaf.R;
 import com.project.alfaf.enums.NotificationMethodEnum;
 
 import java.io.BufferedReader;

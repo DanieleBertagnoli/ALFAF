@@ -80,6 +80,12 @@ def register_fcm_token(token_info):
     except FileNotFoundError:
         pass
 
+    # Check if the token already exists and update the associated phone number
+    for pn, token in tokens.items():
+        if token == fcm_token:
+            tokens.pop(pn)
+            break
+
     tokens[phone_number] = fcm_token
 
     with open(FCM_TOKENS_FILE, 'w') as file:
@@ -87,6 +93,7 @@ def register_fcm_token(token_info):
             file.write(f"{pn} {token}\n")
 
     return jsonify({'status': 'success', 'message': 'FCM token registered successfully'}), 200
+
 
 
 def send_notification(phone_number, name, sender, positions):

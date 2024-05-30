@@ -1,11 +1,14 @@
-package com.project.alfaf;
+package com.project.alfaf.activities;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
@@ -14,6 +17,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.project.alfaf.R;
 import com.project.alfaf.enums.DetectionsEnum;
 import com.project.alfaf.enums.NotificationMethodEnum;
 
@@ -29,6 +33,10 @@ public class SignupActivity extends AppCompatActivity {
     private static final String FILE_NAME = "user_info.txt";
     private static final String SERVER_URL = "http://100.75.230.21:5000";
 
+    private ProgressBar progressBar;
+    private TextView tvLoading;
+    private Button btnSubmit;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,13 +51,19 @@ public class SignupActivity extends AppCompatActivity {
 
         EditText etName = findViewById(R.id.etName);
         EditText etPhoneNumber = findViewById(R.id.etPhoneNumber);
-        Button btnSubmit = findViewById(R.id.btnSubmit);
+        btnSubmit = findViewById(R.id.btnSubmit);
+        progressBar = findViewById(R.id.progressBar);
+        tvLoading = findViewById(R.id.tvLoading);
 
         btnSubmit.setOnClickListener(v -> {
             String name = etName.getText().toString().trim();
             String phoneNumber = etPhoneNumber.getText().toString().trim();
 
             if (!name.isEmpty() && !phoneNumber.isEmpty()) {
+                btnSubmit.setVisibility(View.GONE);
+                progressBar.setVisibility(View.VISIBLE);
+                tvLoading.setVisibility(View.VISIBLE);
+
                 saveUserInfo(name, phoneNumber);
                 sendUserInfoToServer(name, phoneNumber);
             }
@@ -127,16 +141,30 @@ public class SignupActivity extends AppCompatActivity {
                 int responseCode = conn.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     Log.i("SignupActivity", "User info sent successfully.");
-                    Intent intent = new Intent(this, MainActivity.class);
-                    startActivity(intent);
+                    runOnUiThread(() -> {
+                        progressBar.setVisibility(View.GONE);
+                        tvLoading.setVisibility(View.GONE);
+                        Intent intent = new Intent(this, MainActivity.class);
+                        startActivity(intent);
+                    });
                 } else {
                     Log.e("SignupActivity", "Failed to send user info. Response code: " + responseCode);
-                    runOnUiThread(() -> showAlert("The server is not reachable, try again."));
+                    runOnUiThread(() -> {
+                        progressBar.setVisibility(View.GONE);
+                        tvLoading.setVisibility(View.GONE);
+                        btnSubmit.setVisibility(View.VISIBLE);
+                        showAlert("The server is not reachable, try again.");
+                    });
                 }
                 conn.disconnect();
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() -> showAlert("The server is not reachable, try again. \n\nError: " + e));
+                runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    tvLoading.setVisibility(View.GONE);
+                    btnSubmit.setVisibility(View.VISIBLE);
+                    showAlert("The server is not reachable, try again. \n\nError: " + e);
+                });
             }
         }).start();
     }

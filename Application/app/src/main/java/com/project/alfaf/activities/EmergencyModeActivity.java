@@ -1,4 +1,4 @@
-package com.project.alfaf;
+package com.project.alfaf.activities;
 
 import android.Manifest;
 import android.content.Context;
@@ -24,6 +24,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
+import com.project.alfaf.R;
 import com.project.alfaf.enums.NotificationMethodEnum;
 
 import java.io.BufferedReader;

@@ -1,4 +1,4 @@
-package com.project.alfaf;
+package com.project.alfaf.utils;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;

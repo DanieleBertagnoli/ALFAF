@@ -31,7 +31,7 @@ import java.net.URL;
 public class SignupActivity extends AppCompatActivity {
 
     private static final String FILE_NAME = "user_info.txt";
-    private static final String SERVER_URL = "http://100.75.230.21:5000";
+    private static final String SERVER_URL = "http://100.104.220.21:5000";
 
     private ProgressBar progressBar;
     private TextView tvLoading;

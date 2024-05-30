@@ -220,7 +220,7 @@ public class EmergencyModeActivity extends AppCompatActivity {
                     }
                     String message = messageBuilder.toString();
 
-                    URL url = new URL("http://100.75.230.21:5000");
+                    URL url = new URL("http://100.104.220.21:5000");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestMethod("POST");
                     conn.setDoOutput(true);

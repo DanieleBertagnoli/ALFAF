@@ -1,5 +1,6 @@
 package com.project.alfaf.activities;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,6 +16,8 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.project.alfaf.R;
 import com.project.alfaf.enums.DetectionsEnum;
+import com.project.alfaf.services.FallDetectionService;
+import com.project.alfaf.services.ShakeDetectionService;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -66,6 +69,34 @@ public class DetectionSettingsActivity extends AppCompatActivity {
                     DetectionsEnum.SHAKE_DETECTION + ": " + shakeDetectionSwitch.isChecked() + "\n" +
                     DetectionsEnum.FIGHT_DETECTION + ": " + fightDetectionSwitch.isChecked();
             fos.write(data.getBytes());
+
+            // Check and stop/start services based on switch states
+            if (fallDetectionSwitch.isChecked()) {
+                if (!isServiceRunning(FallDetectionService.class)) {
+                    startService(new Intent(this, FallDetectionService.class));
+                }
+            } else {
+                stopService(new Intent(this, FallDetectionService.class));
+            }
+
+            if (shakeDetectionSwitch.isChecked()) {
+                if (!isServiceRunning(ShakeDetectionService.class)) {
+                    startService(new Intent(this, ShakeDetectionService.class));
+                }
+            } else {
+                stopService(new Intent(this, ShakeDetectionService.class));
+            }
+
+            if (fightDetectionSwitch.isChecked()) {
+                // Uncomment and modify the following line if you have a FightDetectionService
+                // if (!isServiceRunning(FightDetectionService.class)) {
+                //     startService(new Intent(this, FightDetectionService.class));
+                // }
+            } else {
+                // Uncomment and modify the following line if you have a FightDetectionService
+                // stopService(new Intent(this, FightDetectionService.class));
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -97,5 +128,15 @@ public class DetectionSettingsActivity extends AppCompatActivity {
         } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

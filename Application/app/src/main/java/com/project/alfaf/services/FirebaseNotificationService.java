@@ -6,36 +6,35 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.NotificationCompat;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.project.alfaf.R;
 import com.project.alfaf.activities.EmergencyMapActivity;
 import com.project.alfaf.activities.MainActivity;
-import com.project.alfaf.R;
+import com.project.alfaf.enums.NotificationMethodEnum;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import android.content.SharedPreferences;
 
 public class FirebaseNotificationService extends FirebaseMessagingService {
 
     private static final String TAG = "FirebaseNotificationService";
     private static final String CHANNEL_ID = "FirebaseNotificationChannel";
-    private static final String SERVER_URL = "http://100.75.230.21:5000";
+    private static final String SERVER_URL = "http://100.104.220.21:5000";
     private static final String FILE_NAME = "user_info.txt";
     private static final int NOTIFICATION_ID = 1001;
     private static final String TOKEN_KEY = "firebase_token";
@@ -81,6 +80,11 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
     }
 
     private void sendNotification(String title, String body, ArrayList<String> lastKnownPositions) {
+        if (!isNotificationEnabled()) {
+            Log.d(TAG, "Notifications are disabled in settings.");
+            return;
+        }
+
         Intent intent = new Intent(this, EmergencyMapActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putStringArrayListExtra("lastKnownPositions", lastKnownPositions);
@@ -90,11 +94,42 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
                 .setSmallIcon(R.drawable.alert_icon)
                 .setContentTitle(title)
                 .setContentText(body)
-                .setContentIntent(pendingIntent);
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true); // Add this to dismiss the notification after it's clicked
 
         Notification notification = notificationBuilder.build();
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(NOTIFICATION_ID, notification);
+    }
+
+    private boolean isNotificationEnabled() {
+        FileInputStream fis = null;
+        try {
+            File file = new File(getFilesDir(), "notification_settings.txt");
+            if (!file.exists()) {
+                return false; // Default to false if the file doesn't exist
+            }
+            fis = openFileInput("notification_settings.txt");
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader br = new BufferedReader(isr);
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.contains(NotificationMethodEnum.NOTIFICATION + ": ")) {
+                    return Boolean.parseBoolean(line.split(": ")[1]);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return false; // Default to false if there's an error
     }
 
     public static void sendRegistrationToServer(Context context) {

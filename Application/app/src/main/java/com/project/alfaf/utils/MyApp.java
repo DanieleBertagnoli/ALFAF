@@ -3,15 +3,30 @@ package com.project.alfaf.utils;
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class MyApp extends Application {
 
+    private static final String TAG = "MyApp";
     private static boolean isForeground = false;
 
     @Override
     public void onCreate() {
         super.onCreate();
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+
+            }
+
+            @Override
+            public void onActivityStarted(@NonNull Activity activity) {
+
+            }
+
             @Override
             public void onActivityResumed(Activity activity) {
                 isForeground = true;
@@ -23,19 +38,20 @@ public class MyApp extends Application {
             }
 
             @Override
-            public void onActivityCreated(Activity activity, Bundle savedInstanceState) {}
+            public void onActivityStopped(@NonNull Activity activity) {
+
+            }
 
             @Override
-            public void onActivityStarted(Activity activity) {}
+            public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+
+            }
+
+            // Other lifecycle methods
 
             @Override
-            public void onActivityStopped(Activity activity) {}
-
-            @Override
-            public void onActivitySaveInstanceState(Activity activity, Bundle outState) {}
-
-            @Override
-            public void onActivityDestroyed(Activity activity) {}
+            public void onActivityDestroyed(Activity activity) {
+            }
         });
     }
 

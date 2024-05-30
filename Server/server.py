@@ -22,8 +22,8 @@ def handle_requests():
     command = data[0]
     if command == 'new_user':
         return register_user(data[1:])
-    elif command == 'emergency':
-        return handle_emergency(data[3:], data[1], data[2])
+    elif command == 'emergency' or command == 'possible_emergency':
+        return handle_emergency(data[3:], data[1], data[2], command)
     elif command == 'register_token':
         return register_fcm_token(data[1:])
 
@@ -44,7 +44,7 @@ def register_user(user_info):
     return jsonify({'status': 'success', 'message': 'User registered successfully'}), 200
 
 
-def handle_emergency(phone_numbers, sender, positions):
+def handle_emergency(phone_numbers, sender, positions, emergency_type):
     if not phone_numbers:
         return jsonify({'status': 'error', 'message': 'No phone numbers provided'}), 400
 
@@ -57,7 +57,7 @@ def handle_emergency(phone_numbers, sender, positions):
         if user_info:
             name, _ = user_info
             positions = positions.split('_')[:-1]
-            send_notification(phone_number, name, sender, positions)
+            send_notification(phone_number, name, sender, positions, emergency_type)
         else:
             print(f'No user info found for {phone_number}')
 
@@ -96,16 +96,23 @@ def register_fcm_token(token_info):
 
 
 
-def send_notification(phone_number, name, sender, positions):
+def send_notification(phone_number, name, sender, positions, emergency_type):
     fcm_token = get_fcm_token(phone_number)
     if fcm_token:
-        body = f"{name}, {sender} needs help! Location: "
+
+        if emergency_type == 'emergency':
+            body = f"{name}, {sender} needs help! Location: "
+            title = "Emergency Alert"
+        else:
+            body = f"{name}, {sender} may need help! Location: "
+            title = "Possible Emergency Alert"
+
         for i in range(0, len(positions), 4):
             body += f'\n{positions[i]} {positions[i+1]} {positions[i+2]} {positions[i+3]}'
 
         message = messaging.Message(
             data={
-                'title': "Emergency Alert",
+                'title': title,
                 'body': body
             },
             token=fcm_token

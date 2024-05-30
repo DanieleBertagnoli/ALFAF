@@ -90,11 +90,11 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
                 .setSmallIcon(R.drawable.alert_icon)
                 .setContentTitle(title)
                 .setContentText(body)
-                .setAutoCancel(true)
                 .setContentIntent(pendingIntent);
 
+        Notification notification = notificationBuilder.build();
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+        notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
     public static void sendRegistrationToServer(Context context) {
@@ -156,7 +156,7 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Firebase Notification Service";
             String description = "Channel for Firebase Notification Service";
-            int importance = NotificationManager.IMPORTANCE_LOW;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
 

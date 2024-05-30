@@ -146,7 +146,7 @@ public class ShakeDetectionService extends Service implements SensorEventListene
         mTimerRunnable = new Runnable() {
             @Override
             public void run() {
-                EmergencyModeActivity.sendEmergencyNotification(getApplicationContext());
+                EmergencyModeActivity.sendEmergencyNotification(getApplicationContext(), "possible_emergency");
             }
         };
         mHandler.postDelayed(mTimerRunnable, TIMER_DELAY_MS);

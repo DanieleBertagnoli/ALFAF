@@ -23,6 +23,7 @@ import com.project.alfaf.services.FallDetectionService;
 import com.project.alfaf.services.FirebaseNotificationService;
 import com.project.alfaf.services.PositionLoggingService;
 import com.project.alfaf.services.ShakeDetectionService;
+import com.project.alfaf.utils.MyApp;
 
 import java.io.BufferedReader;
 import java.io.File;

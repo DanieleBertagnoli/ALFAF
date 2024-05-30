@@ -149,7 +149,7 @@ public class EmergencyModeActivity extends AppCompatActivity {
 
         // Send app notification if enabled
         if (notificationEnabled) {
-            sendEmergencyNotification(this);
+            sendEmergencyNotification(this, "emergency");
         }
     }
 
@@ -199,7 +199,7 @@ public class EmergencyModeActivity extends AppCompatActivity {
         return isEnabled;
     }
 
-    public static void sendEmergencyNotification(Context context) {
+    public static void sendEmergencyNotification(Context context, String emergencyType) {
 
         if(!isNotificationMethodEnabled(NotificationMethodEnum.NOTIFICATION, context)){
             return;
@@ -211,7 +211,7 @@ public class EmergencyModeActivity extends AppCompatActivity {
                     String phoneNumber = getPhoneNumber(context);
                     List<String> contacts = getContacts(context);
                     ArrayList<String> lastKnownPosition = readLastKnownPosition(context);
-                    StringBuilder messageBuilder = new StringBuilder("emergency " + phoneNumber + " ");
+                    StringBuilder messageBuilder = new StringBuilder(emergencyType+ " " + phoneNumber + " ");
                     for (String position : lastKnownPosition) {
                         messageBuilder.append(position.replaceAll("\\s","_")).append("_");
                     }

@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.telephony.SmsManager;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.database.Cursor;
@@ -41,7 +42,8 @@ public class EmergencyModeActivity extends AppCompatActivity {
 
     private final int automaticConfirmTimer = 10; // Automatic confirm timer in seconds
     private CountDownTimer countDownTimer;
-    private TextView autoActivateTxt;
+    private ProgressBar progressBar;
+    private TextView progressText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,22 +75,26 @@ public class EmergencyModeActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        autoActivateTxt = findViewById(R.id.auto_activate_txt);
+        progressBar = findViewById(R.id.progress_bar);
+        progressText = findViewById(R.id.progress_text);
 
         // Start the countdown timer
         startConfirmCountdown();
     }
 
     private void startConfirmCountdown() {
-        countDownTimer = new CountDownTimer(automaticConfirmTimer * 1000, 1000) {
+        countDownTimer = new CountDownTimer(automaticConfirmTimer * 1000, 100) {
             @Override
             public void onTick(long millisUntilFinished) {
-                String newText = "AUTOMATIC CONFIRM IN " + millisUntilFinished/1000 + "s";
-                autoActivateTxt.setText(newText);
+                int progress = (int) ((millisUntilFinished / (double) (automaticConfirmTimer * 1000)) * 100);
+                progressBar.setProgress(progress);
+                progressText.setText(String.format("%ds", millisUntilFinished / 1000)); // Update progress text
             }
 
             @Override
             public void onFinish() {
+                progressBar.setProgress(0);
+                progressText.setText("Activated");
                 manageEmergency();
             }
         }.start();

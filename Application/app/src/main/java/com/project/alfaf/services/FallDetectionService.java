@@ -19,6 +19,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.project.alfaf.activities.MainActivity;
 import com.project.alfaf.R;
+import com.project.alfaf.utils.NotificationUtil;
 
 public class FallDetectionService extends Service implements SensorEventListener {
 
@@ -33,7 +34,8 @@ public class FallDetectionService extends Service implements SensorEventListener
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
-        startForeground(NOTIFICATION_ID, getNotification("Fall detection is active"));
+        NotificationUtil.createGeneralNotificationChannel(this);
+        startForeground(NotificationUtil.NOTIFICATION_ID, NotificationUtil.getGeneralNotification(this, "Fall detection"));
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
@@ -41,6 +43,7 @@ public class FallDetectionService extends Service implements SensorEventListener
             sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {

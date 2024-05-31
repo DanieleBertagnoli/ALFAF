@@ -50,15 +50,14 @@ public class NotificationSettingsActivity extends AppCompatActivity {
 
         ImageView backBtn = findViewById(R.id.back_btn_notifications);
         backBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+            getOnBackPressedDispatcher().onBackPressed();
         });
 
         ImageButton confirmBtn = findViewById(R.id.confirm_button_notification);
         confirmBtn.setOnClickListener(v -> {
             saveCheckboxStates();
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+            finish();
+            getOnBackPressedDispatcher().onBackPressed();
         });
     }
 

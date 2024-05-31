@@ -22,8 +22,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         ImageView backBtn = findViewById(R.id.back_btn_settings);
         backBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
+            finish();
+            getOnBackPressedDispatcher().onBackPressed();
         });
 
         LinearLayout contactsBtn = findViewById(R.id.contacts_settings);

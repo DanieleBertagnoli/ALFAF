@@ -18,6 +18,7 @@ import com.project.alfaf.R;
 import com.project.alfaf.activities.EmergencyMapActivity;
 import com.project.alfaf.activities.MainActivity;
 import com.project.alfaf.enums.NotificationMethodEnum;
+import com.project.alfaf.utils.NotificationUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -44,18 +45,12 @@ public class FirebaseNotificationService extends FirebaseMessagingService {
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this,
-                0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+        NotificationUtil.createGeneralNotificationChannel(this);
 
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Firebase Notification Service")
-                .setContentText("Listening for Firebase messages")
-                .setSmallIcon(R.drawable.alert_icon)
-                .setContentIntent(pendingIntent)
-                .build();
-        startForeground(NOTIFICATION_ID, notification);
+        Notification notification = NotificationUtil.getGeneralNotification(this, "Firebase");
+        startForeground(NotificationUtil.NOTIFICATION_ID, notification);
     }
+
 
     @Override
     public void onNewToken(String token) {

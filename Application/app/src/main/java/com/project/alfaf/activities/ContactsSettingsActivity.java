@@ -67,8 +67,8 @@ public class ContactsSettingsActivity extends AppCompatActivity {
 
         ImageView backBtn = findViewById(R.id.back_btn_contacts);
         backBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+            finish();
+            getOnBackPressedDispatcher().onBackPressed();
         });
 
         loadContactsFromFile();

@@ -16,6 +16,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import com.project.alfaf.R;
+import com.project.alfaf.utils.NotificationUtil;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -48,7 +49,10 @@ public class PositionLoggingService extends Service {
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
-        startForeground(NOTIFICATION_ID, createNotification());
+
+        NotificationUtil.createGeneralNotificationChannel(this);
+        startForeground(NotificationUtil.NOTIFICATION_ID, NotificationUtil.getGeneralNotification(this, "Position tracking"));
+
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         handler.post(positionLogger); // Start logging positions
     }

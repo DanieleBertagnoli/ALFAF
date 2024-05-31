@@ -18,6 +18,7 @@ import com.project.alfaf.R;
 import com.project.alfaf.enums.DetectionsEnum;
 import com.project.alfaf.services.FallDetectionService;
 import com.project.alfaf.services.ShakeDetectionService;
+import com.project.alfaf.utils.NotificationUtil;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -58,8 +59,8 @@ public class DetectionSettingsActivity extends AppCompatActivity {
         ImageButton confirmBtn = findViewById(R.id.confirm_button_detections);
         confirmBtn.setOnClickListener(v -> {
             saveSwitchStates();
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+            finish();
+            getOnBackPressedDispatcher().onBackPressed();
         });
     }
 
@@ -77,6 +78,7 @@ public class DetectionSettingsActivity extends AppCompatActivity {
                 }
             } else {
                 stopService(new Intent(this, FallDetectionService.class));
+                NotificationUtil.stopService(this, "Fall detection");
             }
 
             if (shakeDetectionSwitch.isChecked()) {
@@ -85,6 +87,7 @@ public class DetectionSettingsActivity extends AppCompatActivity {
                 }
             } else {
                 stopService(new Intent(this, ShakeDetectionService.class));
+                NotificationUtil.stopService(this, "Shake detection");
             }
 
             if (fightDetectionSwitch.isChecked()) {

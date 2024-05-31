@@ -24,6 +24,7 @@ import com.project.alfaf.activities.EmergencyModeActivity;
 import com.project.alfaf.activities.MainActivity;
 import com.project.alfaf.utils.MyApp;
 import com.project.alfaf.R;
+import com.project.alfaf.utils.NotificationUtil;
 
 public class ShakeDetectionService extends Service implements SensorEventListener {
 
@@ -45,6 +46,10 @@ public class ShakeDetectionService extends Service implements SensorEventListene
     @Override
     public void onCreate() {
         super.onCreate();
+        createNotificationChannel();
+        NotificationUtil.createGeneralNotificationChannel(this);
+        startForeground(NotificationUtil.NOTIFICATION_ID, NotificationUtil.getGeneralNotification(this, "Shake detection"));
+
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
@@ -53,9 +58,8 @@ public class ShakeDetectionService extends Service implements SensorEventListene
         }
 
         mHandler = new Handler(Looper.getMainLooper());
-        createNotificationChannel();
-        startForeground(NOTIFICATION_ID, getNotification());
     }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {

@@ -45,8 +45,8 @@ public class DetectionSettingsActivity extends AppCompatActivity {
 
         ImageView backBtn = findViewById(R.id.back_btn_detections);
         backBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+            finish();
+            getOnBackPressedDispatcher().onBackPressed();
         });
 
         fallDetectionSwitch = findViewById(R.id.fall_detection_option);

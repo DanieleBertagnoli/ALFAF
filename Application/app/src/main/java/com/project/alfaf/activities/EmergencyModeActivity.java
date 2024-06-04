@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -127,6 +128,15 @@ public class EmergencyModeActivity extends AppCompatActivity {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        if(contactNumbers.isEmpty()) {
+            new AlertDialog.Builder(this)
+                    .setTitle("No contacts found")
+                    .setMessage("No contacts selected, pleas add at least one contact from the settings!")
+                    .setPositiveButton("OK", null)
+                    .show();
+            return;
         }
 
         // Check notification settings

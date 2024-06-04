@@ -12,13 +12,17 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
+import com.project.alfaf.activities.EmergencyModeActivity;
 import com.project.alfaf.activities.MainActivity;
 import com.project.alfaf.R;
+import com.project.alfaf.utils.MyApp;
 import com.project.alfaf.utils.NotificationUtil;
 
 public class FallDetectionService extends Service implements SensorEventListener {
@@ -26,9 +30,10 @@ public class FallDetectionService extends Service implements SensorEventListener
     private static final String CHANNEL_ID = "FallDetectionServiceChannel";
     private static final int NOTIFICATION_ID = 1002;
     private static final float FALL_THRESHOLD = 2.0f; // Threshold value for free fall detection
-
+    private static final int TIMER_DELAY_MS = 10000;
     private SensorManager sensorManager;
-    private Sensor accelerometer;
+    private Handler mHandler;
+    private Runnable mTimerRunnable;
 
     @Override
     public void onCreate() {
@@ -39,9 +44,11 @@ public class FallDetectionService extends Service implements SensorEventListener
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
-            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         }
+
+        mHandler = new Handler(Looper.getMainLooper());
     }
 
 
@@ -50,12 +57,10 @@ public class FallDetectionService extends Service implements SensorEventListener
         return START_STICKY;
     }
 
-    @Override
     public void onDestroy() {
+        sensorManager.unregisterListener(this);
+        mHandler.removeCallbacks(mTimerRunnable);
         super.onDestroy();
-        if (sensorManager != null) {
-            sensorManager.unregisterListener(this);
-        }
     }
 
     @Override
@@ -73,15 +78,36 @@ public class FallDetectionService extends Service implements SensorEventListener
 
             if (acceleration < FALL_THRESHOLD) {
                 Log.d("FallDetectionService", "Phone is falling!");
-                sendFallAlertNotification();
-                // Add additional actions you want to take when a fall is detected
+                handleFallEvent();
             }
         }
+    }
+
+    private void startTimer() {
+        mHandler.removeCallbacks(mTimerRunnable);
+        mTimerRunnable = new Runnable() {
+            @Override
+            public void run() {
+                EmergencyModeActivity.sendEmergencyNotification(getApplicationContext(), "possible_emergency");
+            }
+        };
+        mHandler.postDelayed(mTimerRunnable, TIMER_DELAY_MS);
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // Not used in this example
+    }
+
+    private void handleFallEvent() {
+        if (MyApp.isAppInForeground()) {
+            Intent intent = new Intent(this, EmergencyModeActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } else {
+            sendFallAlertNotification();
+            startTimer();
+        }
     }
 
     private void createNotificationChannel() {
@@ -96,19 +122,6 @@ public class FallDetectionService extends Service implements SensorEventListener
                 manager.createNotificationChannel(serviceChannel);
             }
         }
-    }
-
-    private Notification getNotification(String contentText) {
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this,
-                0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
-
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Fall Detection Service")
-                .setContentText(contentText)
-                .setSmallIcon(R.drawable.alert_icon)
-                .setContentIntent(pendingIntent)
-                .build();
     }
 
     private void sendFallAlertNotification() {

@@ -36,7 +36,6 @@ public class ShakeDetectionService extends Service implements SensorEventListene
     private static final int TIMER_DELAY_MS = 10000;
 
     private SensorManager mSensorManager;
-    private Sensor mAccelerometer;
     private long mShakeTimestamp;
     private int mShakeCount;
 
@@ -51,7 +50,7 @@ public class ShakeDetectionService extends Service implements SensorEventListene
         startForeground(NotificationUtil.NOTIFICATION_ID, NotificationUtil.getGeneralNotification(this, "Shake detection"));
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        Sensor mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         if (mAccelerometer != null) {
             mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
@@ -154,18 +153,6 @@ public class ShakeDetectionService extends Service implements SensorEventListene
             }
         };
         mHandler.postDelayed(mTimerRunnable, TIMER_DELAY_MS);
-    }
-
-    private Notification getNotification() {
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Shake Detection Service")
-                .setContentText("Shake detection service is running")
-                .setSmallIcon(R.drawable.alert_icon)
-                .setContentIntent(pendingIntent)
-                .build();
     }
 
     private void createNotificationChannel() {

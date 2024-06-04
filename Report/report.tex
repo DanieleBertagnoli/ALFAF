@@ -313,6 +313,36 @@ to pre-determined contact (\hyperref[fig:alert_others]{Figure~\ref*{fig:alert_ot
     \label{fig:alert_others}
 \end{figure}
 
+\section{Needs, Context and Interaction Analysis}
+\subsection{User's Needs \& Competitors}
+After the interviews and the questionnaire, we dedicated a good amount of time to analyze the results, trying to underline the user needs we found through the need-finding step. On Google Play and Apple Store, we didn't find any application with the same intent as the one we tried to propose. There are some applications dedicated to emergencies, but their main scope is to alert ambulances, hospitals, or the police. Our main idea is to create an application to alert someone from our contact list and eventually ambulances. Users don't necessarily need to alert hospitals for their emergencies, so we have to give them the possibility to contact someone and, if needed, the public services. The main goals of our application are:
+\begin{itemize}
+    \item Keep the interface simple to facilitate usage during emergencies.
+    \item Keep the user informed about all the running services, also giving the possibility to turn them off if not needed.
+    \item Try to keep only essential background services to avoid energy waste, thus saving phone battery life.
+    \item Provide a fast and easy way to use the functionalities even in eye-free situations.
+    \item Try to detect specific contexts and use this information as input.
+\end{itemize}
+
+\subsection{Contexts}
+After the need-finding step, we devoted part of the time to context analysis. There are mainly two contexts in which the application is designed to be used:
+\begin{itemize}
+    \item \textbf{Emergency Context}
+    \item \textbf{Non-emergency Context}
+\end{itemize}
+Emergencies, as seen from the need-finding step, can include a vast number of situations, from a simple fall to serious accidents. However, there are mainly three sub-contexts we identified that can be considered as common emergencies:
+\begin{itemize}
+    \item Fall down
+    \item Fight situation
+    \item General emergency
+\end{itemize}
+Once we chose the contexts, we also had to understand how these contexts could be deduced. A fall can be easily detected through accelerometer monitoring. A fight is more difficult as it needs a machine-learning algorithm trained on sound waves; once deployed, the sounds are available through the microphone listening. Lastly, a general emergency is something not specific where the user can still use the phone but has to alert someone explicitly. The sensors needed are described in \hyperref[subsec:interactions]{Section~\ref*{subsec:interactions}} as they are strictly related to the interactions designed to manage this context.
+
+\subsection{Interactions}
+\label{subsec:interactions}
+The interactions are intrinsically derived from the context analysis made previously, as they are designed to be used in specific situations. While for the fall down and fight contexts, the interaction can be considered implicit as the input is deduced from the context deduction itself, for the general emergency the user has to explicitly perform an action to interact with the system. We designed a tangible interaction, in which the phone is used as an object to perform the action. We are provided back with a non-tangible output that can vary depending on the status in which the action is performed. When the application is in the background, we simply inform the user about the detection using a push-notification, while if the application is in the foreground, then it means that the action was not performed unintentionally, hence we activate the emergency mode. For more details, see \hyperref[subsubsec:services]{Section~\ref*{subsubsec:services}}.
+
+
 \section{Marvel Prototype}
 As a first prototype, we decided to create a Marvel prototype, which can be tried 
 at the following link: \url{https://marvelapp.com/prototype/fa2f7b8}. 
@@ -383,7 +413,193 @@ The following rows contain the main content of each test:
     \item The user is a 40-year-old man. He encountered no problems and completed all tasks successfully, praising the application's responsiveness.
 \end{enumerate}
 
+\section{Android Studio Application}
+To develop our application, we used Android Studio with Java as the main 
+programming language. This IDE provides many benefits, such as 
+straightforward integration with Google APIs and tools 
+(like the one we used and will describe in the next part) and simple yet 
+powerful XML styling for the application's pages. However, the application 
+is trivially not available for iOS devices. 
 
+\subsection{Implementation}
+\subsubsection{Activities}
+As the first step, we developed the main interfaces (called activities 
+in Android Studio) trying to remain consistent with those presented in 
+the Marvel prototype. The main activities are:
+\begin{itemize}
+    \item \textbf{Home}: When we developed the home, we aimed to keep it 
+    simple to facilitate the user. We have mainly two contexts in which 
+    the user can use that interface: emergency situations or standard 
+    contexts. When we are in an emergency, we struggle to perform even 
+    those actions considered "automatic," such as unlocking the phone or 
+    using it as habitual. Therefore, we collapsed all the needed elements 
+    into buttons:
+    \begin{enumerate}
+        \item Emergency button: A red button that implicitly focuses our 
+        attention, so even if we are panicking, we can immediately 
+        identify what we need in that moment (the button itself to 
+        activate the emergency mode).
+        \item Settings button: A typical gear in the top-right corner. In 
+        this case, it is not necessary to capture our attention as it 
+        should be used in non-emergency contexts, when the user can calmly 
+        analyze the interface.
+    \end{enumerate} 
+    \item \textbf{Emergency Activity}: This activity is designed to be 
+    minimal to satisfy the emergency requirements exposed before. The 
+    user can confirm the emergency by pressing the confirm button or 
+    cancel the action. The system will also confirm the emergency after 
+    a 10-second timer expires after the activity launch. The user is 
+    informed using a reversed progress bar under the confirm button 
+    (\textbf{context mental model}).
+    \item \textbf{Settings Activity}: This screen is organized into 3 
+    options:
+    \begin{enumerate}
+        \item \textbf{Contacts}: By clicking on it, the user can select 
+        one or more contacts from the phone contact list. These contacts 
+        will then be informed through the notification methods about 
+        emergencies.
+        \item \textbf{Notification Methods}: The user can use three 
+        checkboxes to choose which of the proposed methods he intends 
+        to use in case of an emergency. The options are: 
+        \textbf{Call, SMS, and Application notification}.
+        \item \textbf{Detections}: This section is dedicated to 
+        activating or deactivating the detection services offered by the 
+        application (explained in detail in 
+        \hyperref[subsubsec:services]{Section~\ref*{subsubsec:services}}).
+    \end{enumerate}
+    \item \textbf{Signup Activity}: This activity is automatically shown 
+    when the user opens the application for the first time. It is necessary 
+    to register the user on our server. We save both the phone number and the  
+    FCM token (see \hyperref[subsubsec:firebase]{Section~\ref*{subsubsec:firebase}}). The user can still 
+    modify its phone number by simply pressing on the reset button available 
+    in the settings activity.
+    \item \textbf{Map Activity}: This activity cannot be accessed directly,
+    we access to it once that we receive an emergency notification. By  
+    clicking on it, the map will show the last 5 known position of the user 
+    who activated the emergency mode. By selecting one of these markers, we  
+    will be redirected to google maps application with the destination set as 
+    the marker we selected. 
+\end{itemize}
 
+\subsubsection{Services}
+\label{subsubsec:services}
+Once the main activities were developed, such as the main screen, the 
+emergency mode, and all the settings screens, we implemented the 
+so-called services. In Android Studio, a service is a forever-running 
+task in background mode. We have five services:
+\begin{itemize}
+    \item \textbf{Firebase service}: This service is an always-running 
+    background service which listens for incoming messages from 
+    Google firebase API (see \hyperref[subsubsec:firebase]{Section~\ref*{subsubsec:firebase}}).
+    \item \textbf{Position logging service}: This service is used to log 
+    the user's position every 2 minutes. These positions are then stored 
+    in a .txt file so they can be accessed in other parts of the code, 
+    remaining persistent even if the app is closed.
+    \item \textbf{Shake detection service}: By using the accelerometer,
+    we managed to develop the shake detection part of the project. 
+    The accelerometer values are monitored and change in a few 
+    milliseconds, then an action is triggered. In particular, when the 
+    phone is being shaken, we have two possible actions based on the
+    system status:
+    \begin{itemize}
+        \item When the application is in the background, we send a 
+        notification to the user informing him about the detection.
+        \item When the application is in the foreground, we activate the 
+        emergency mode.
+    \end{itemize}
+    \item \textbf{Fall detection service}: Through the accelerometer, 
+    we monitor the y-axis velocity detecting an eventual fall down. 
+    Like for the previous service, the actions are those described 
+    based on the application being in the background or foreground.
+    \item Bonus, \textbf{Fight detection service}: This service is not 
+    explicitly implemented as we had no time to develop a machine-learning 
+    algorithm able to process sound. However, we developed all the 
+    necessary code for its integration.
+\end{itemize}
+The user is informed about which service is running in the background 
+through a persistent notification.
+
+\subsubsection{Google Firebase}
+\label{subsubsec:firebase}
+We had to implement a system that was able to notify the selected 
+users to inform them about emergencies. The way we did that is through 
+Google Firebase. Firebase offers features such as real-time database, 
+authentication, hosting, cloud messaging, analytics, and more, all 
+integrated into a single platform. In this application we used Google 
+cloud messaging to provide a notification system for the users. The main 
+logic is the following:
+\begin{enumerate}
+    \item When the user opens the application a new FCM token (unique for 
+    each user) is generated and sent to the server (see 
+    \hyperref[subsubsec:server]{Section~\ref*{subsubsec:server}}) that stores 
+    the token associating it to the user's phone number.
+    \item When an emergency must be broadcasted among the selected user, 
+    the application sends an emergency message to the server containing
+    the phone number of the user who has the emergency and all the phone 
+    numbers to be informed. The server retrieve the FCM tokens and 
+    sends the request to the google firebase API that will send the 
+    notification to numbers associated with that FCM token.
+    \item Each application has the Firebase service always running 
+    in background that waits for incoming notifications. Once received, 
+    the application shows the notification with the number of the person 
+    who is in difficulty. 
+\end{enumerate}
+
+\subsubsection{Server}
+\label{subsubsec:server}
+The server is a simply python server deployed using Flask. The main 
+duties of the server are:
+\begin{itemize}
+    \item \textbf{Save the new user into a database} associating their  
+    phone number with the fcm token.
+    \item \textbf{Send the emergency request to firebase API}.
+\end{itemize}
+
+\subsection{Tests}
+We conducted a total of 20 tests; the first 5 were made on a preliminary version of the application, while the last 15 were on the final version. The first version of the application was designed to be identical to the Marvel prototype, so it was also missing important features such as the notification system implemented through Firebase and the map activity. The first 5 tests were fundamental to ensure that the application design was easy to use and consistent with what was observed with the Marvel tests.
+
+\subsubsection{Taks}
+In the first 5 tests we used the same tasks used during the Marvel prototype
+testing phase. While for the remaining 15, we asked to the partecipants
+the to perform the following actions:
+\begin{enumerate}
+    \item Open the application for the first time and signup. 
+    \item Find the contact section and add some contacts to the list.
+    \item Find the detection section and disable at least one detection.
+    \item Find the notification method section and personalize the notification 
+    methods.
+    \item Activate the emergency mode. Then close the application and 
+    try to activate the emergency mode. 
+    \item Acting as someone who is alerted by the app, try to understand where 
+    is the person.  
+    \item Try to reset the settings. 
+\end{enumerate}
+
+\subsubsection{Results}
+These are the results of all the 15 tests on the full-developed application:
+\begin{enumerate}
+    \item He was able to perform the first 4 tasks without hesitation. 
+    Regarding the first part of the fifth task, the user correctly shaked 
+    the phone to trigger the emergency mode, however when he was asked to 
+    close the application and activate again the emergency mode, he opened 
+    the app and the he shook the phone instead of doing it with the 
+    application running in background. For the localization task he clicked on the 
+    notification but he faced some problems to understand how to reach the 
+    location. Lastly he was able to reset the settings very fastly. 
+
+    \item She performed all the tasks without problems. She suggested to 
+    add something that makes more clear that the markers on the map can 
+    be clicked to open the map application directly with the coordinates. 
+
+    \item He perfomed the first task without problems. During the second 
+    task he pressed the emergency button for error and he also confirmed 
+    the emergency. Since no contacts were present in the list, the application 
+    crashed. After this problem, all the tasks were compledted without problems. 
+
+    \item She performed all the tasks correctly, however after the tests 
+    while she was giving some opinions about the system, she was moving the 
+    hands and the phone detected a fall. Therefore, we adjusted the 
+    accelerometer threshold to avoid false detections as much as possible.  
+\end{enumerate}
 
 \end{document}
